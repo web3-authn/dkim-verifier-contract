@@ -1,63 +1,52 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-
-import { TatchiPasskeyProvider, type TatchiConfigsInput } from "@tatchi-xyz/sdk/react";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { Toaster } from "sonner";
 
+import { TatchiPasskeyProvider, type TatchiConfigsInput } from "@tatchi-xyz/sdk/react";
+import "@tatchi-xyz/sdk/react/styles";
+
 import { HomePage } from "./pages/HomePage";
+import { ProfileMenuControlProvider } from "./contexts/ProfileMenuControl";
 import "./index.css";
 
 // Note: Vite requires using `import.meta.env` exactly; optional chaining breaks env injection.
 const env = import.meta.env;
 
-const relayerUrl = env.VITE_RELAYER_URL || "https://relay.tatchi.xyz";
-const recoverEmailRecipient = env.VITE_RECOVER_EMAIL_RECIPIENT || "recover-testnet@web3authn.org";
-const emailRecovererContractId = env.VITE_EMAIL_RECOVERER_CONTRACT_ID;
-const dkimVerifierContractId = env.VITE_DKIM_VERIFIER_CONTRACT_ID;
-const zkEmailVerifierContractId = env.VITE_ZK_EMAIL_VERIFIER_CONTRACT_ID;
-const walletOrigin = env.VITE_WALLET_ORIGIN || "https://wallet.web3authn.org";
-
-const config: TatchiConfigsInput = { relayer: { url: relayerUrl } };
-
-if (env.VITE_WEBAUTHN_CONTRACT_ID) config.contractId = env.VITE_WEBAUTHN_CONTRACT_ID;
-if (env.VITE_NEAR_NETWORK) config.nearNetwork = env.VITE_NEAR_NETWORK;
-if (env.VITE_NEAR_RPC_URL) config.nearRpcUrl = env.VITE_NEAR_RPC_URL;
-if (env.VITE_NEAR_EXPLORER) config.nearExplorerUrl = env.VITE_NEAR_EXPLORER;
-
-if (recoverEmailRecipient) {
-  config.relayer = {
-    ...(config.relayer ?? {}),
+const config: TatchiConfigsInput = {
+  walletTheme: "light",
+  contractId: env.VITE_WEBAUTHN_CONTRACT_ID || "w3a-v1.testnet",
+  nearNetwork: env.VITE_NEAR_NETWORK || "testnet",
+  nearRpcUrl: env.VITE_NEAR_RPC_URL || "https://test.rpc.fastnear.com",
+  nearExplorerUrl: env.VITE_NEAR_EXPLORER || "https://testnet.nearblocks.io",
+  relayer: {
+    url: env.VITE_RELAYER_URL || "https://relay.tatchi.xyz",
     emailRecovery: {
-      ...(config.relayer?.emailRecovery ?? {}),
-      mailtoAddress: recoverEmailRecipient,
+      mailtoAddress: env.VITE_RECOVER_EMAIL_RECIPIENT || "recover-testnet@web3authn.org",
     },
-  };
-}
-
-if (emailRecovererContractId || dkimVerifierContractId || zkEmailVerifierContractId) {
-  const emailRecoveryContracts: NonNullable<TatchiConfigsInput["emailRecoveryContracts"]> = {};
-  if (emailRecovererContractId) emailRecoveryContracts.emailRecovererGlobalContract = emailRecovererContractId;
-  if (zkEmailVerifierContractId) emailRecoveryContracts.zkEmailVerifierContract = zkEmailVerifierContractId;
-  if (dkimVerifierContractId) emailRecoveryContracts.emailDkimVerifierContract = dkimVerifierContractId;
-  config.emailRecoveryContracts = emailRecoveryContracts;
-}
-
-config.iframeWallet = {
-  walletOrigin,
-  walletServicePath: env.VITE_WALLET_SERVICE_PATH || "/wallet-service",
-  sdkBasePath: env.VITE_SDK_BASE_PATH || "/sdk",
-  rpIdOverride: env.VITE_RP_ID_BASE || undefined,
+  },
+  emailRecoveryContracts: {
+    emailRecovererGlobalContract: env.VITE_EMAIL_RECOVERER_CONTRACT_ID || "w3a-email-recoverer-v1.testnet",
+    emailDkimVerifierContract: env.VITE_DKIM_VERIFIER_CONTRACT_ID || "email-dkim-verifier-v1.testnet",
+  },
+  iframeWallet: {
+    walletOrigin: env.VITE_WALLET_ORIGIN || "https://wallet.web3authn.org",
+    walletServicePath: env.VITE_WALLET_SERVICE_PATH || "/wallet-service",
+    sdkBasePath: env.VITE_SDK_BASE_PATH || "/sdk",
+    rpIdOverride: env.VITE_RP_ID_BASE || "wallet.web3authn.org",
+  },
 };
 
 const appRoot = document.getElementById("app-root");
 
-if (appRoot) {
-  ReactDOM.createRoot(appRoot).render(
-    <React.StrictMode>
-      <TatchiPasskeyProvider config={config}>
-        <Toaster richColors closeButton />
+if (!appRoot) throw new Error('Missing element: #app-root');
+
+createRoot(appRoot).render(
+  <StrictMode>
+    <TatchiPasskeyProvider config={config}>
+      <Toaster richColors closeButton />
+      <ProfileMenuControlProvider>
         <HomePage />
-      </TatchiPasskeyProvider>
-    </React.StrictMode>,
-  );
-}
+      </ProfileMenuControlProvider>
+    </TatchiPasskeyProvider>
+  </StrictMode>,
+);

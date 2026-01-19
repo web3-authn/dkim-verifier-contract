@@ -20,6 +20,8 @@ import {
 const TRANSFER_NEAR = "0.000123";
 const TRANSFER_AMOUNT_YOCTO = "123000000000000000000"; // 0.000123 NEAR
 
+const PROCESSING_TOAST_OPTIONS = { duration: 4000, dismissible: true, classNames: { closeButton: "toast-close-button" } } as const;
+
 type Step5TestTransferProps = {
   receiverId: string;
 };
@@ -84,7 +86,7 @@ export function Step5TestTransfer({ receiverId }: Step5TestTransferProps) {
         return;
       default:
         log.appendOutput("idle", event.message || String(event.phase));
-        toast.loading(event.message || "Processing...", { id: toastId });
+        toast.message(event.message || "Processing...", { id: toastId, ...PROCESSING_TOAST_OPTIONS });
     }
   };
 
@@ -142,7 +144,7 @@ export function Step5TestTransfer({ receiverId }: Step5TestTransferProps) {
       <aside className={`panel note ${isBlocked ? "is-disabled" : ""} pad-left-05`}>
         <h3>05 Test Transfer</h3>
         <p className="helper">
-          Send a small NEAR transfer to confirm passkey transaction signing works after email recovery.
+          Send a Transfer using the new Passkey. Your new passkey will be numbered (e.g. (2) for recovery keys).
         </p>
       </aside>
       <section className={`panel ${isBlocked ? "is-disabled" : ""}`}>

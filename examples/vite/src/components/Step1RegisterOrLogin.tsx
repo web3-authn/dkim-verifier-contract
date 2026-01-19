@@ -14,6 +14,8 @@ import { Output } from "./Output";
 import { getErrorMessage } from "../utils/errors";
 import { getNearAccountExplorerUrl, getNearExplorerBaseUrl } from "../utils/nearExplorer";
 
+const PROCESSING_TOAST_OPTIONS = { duration: 4000, dismissible: true, classNames: { closeButton: "toast-close-button" } } as const;
+
 type Step1RegisterOrLoginProps = {
   mode: "register" | "login";
   inputUsername: string;
@@ -43,7 +45,7 @@ export function Step1RegisterOrLogin({
     }
 
     const isComplete =
-      event.phase === RegistrationPhase.STEP_8_REGISTRATION_COMPLETE && event.status === RegistrationStatus.SUCCESS;
+      event.phase === RegistrationPhase.STEP_9_REGISTRATION_COMPLETE && event.status === RegistrationStatus.SUCCESS;
     if (event.message) log.appendOutput(isComplete ? "ok" : "idle", event.message);
 
     switch (event.phase) {
@@ -69,14 +71,14 @@ export function Step1RegisterOrLogin({
       case RegistrationPhase.STEP_6_ACCOUNT_VERIFICATION:
         toast.loading(event.message || "Verifying account...", { id: toastId });
         return;
-      case RegistrationPhase.STEP_7_DATABASE_STORAGE:
+      case RegistrationPhase.STEP_8_DATABASE_STORAGE:
         toast.loading(event.message || "Saving credentials...", { id: toastId });
         return;
-      case RegistrationPhase.STEP_8_REGISTRATION_COMPLETE:
+      case RegistrationPhase.STEP_9_REGISTRATION_COMPLETE:
         toast.success(event.message || "Registration completed successfully!", { id: toastId });
         return;
       default:
-        toast.loading("Processing...", { id: toastId });
+        toast.message("Processing...", { id: toastId, ...PROCESSING_TOAST_OPTIONS });
     }
   };
 

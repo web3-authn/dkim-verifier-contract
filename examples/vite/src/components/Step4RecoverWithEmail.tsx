@@ -32,6 +32,8 @@ export function Step4RecoverWithEmail({
 }: Step4RecoverWithEmailProps) {
   const { tatchi, loginState, getLoginSession, loginAndCreateSession, refreshLoginState } = useTatchi();
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingRecoveryEmails, setIsCheckingRecoveryEmails] = useState(false);
+  const [hasRecoveryEmailSet, setHasRecoveryEmailSet] = useState<boolean | null>(null);
   const [mailtoUrl, setMailtoUrl] = useState("");
   const [pendingNearPublicKey, setPendingNearPublicKey] = useState("");
   const [requestId, setRequestId] = useState("");
@@ -115,13 +117,44 @@ export function Step4RecoverWithEmail({
   };
 
   const accountIdToRecover = targetAccountId || lastAccountId;
-  const canRecover = !loginState.isLoggedIn && Boolean(lastAccountId);
-  const isBlocked = !canRecover;
-  const isDisabled = isBlocked || isLoading;
+  const canAttemptRecovery = !loginState.isLoggedIn && Boolean(lastAccountId);
+  const isBlocked = !canAttemptRecovery;
+  const isDisabled = isBlocked || isLoading || isCheckingRecoveryEmails || hasRecoveryEmailSet === false;
 
   const explorerBaseUrl = getNearExplorerBaseUrl(tatchi?.configs?.nearExplorerUrl);
   const lastAccountExplorerUrl = getNearAccountExplorerUrl(explorerBaseUrl, lastAccountId);
   const recoverAccountExplorerUrl = getNearAccountExplorerUrl(explorerBaseUrl, accountIdToRecover);
+
+  const recoveryEmailRequiredMessage = "Set a recovery email in Step 02 before using email recovery.";
+
+  useEffect(() => {
+    if (!canAttemptRecovery || !accountIdToRecover) {
+      setHasRecoveryEmailSet(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsCheckingRecoveryEmails(true);
+
+    tatchi
+      .getRecoveryEmails(accountIdToRecover)
+      .then((emails) => {
+        if (cancelled) return;
+        setHasRecoveryEmailSet(emails.length > 0);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHasRecoveryEmailSet(null);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setIsCheckingRecoveryEmails(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accountIdToRecover, canAttemptRecovery, tatchi]);
 
   const recoverWithEmail = async () => {
     if (loginState.isLoggedIn) {
@@ -137,6 +170,21 @@ export function Step4RecoverWithEmail({
       return;
     }
     if (isLoading) return;
+
+    setIsCheckingRecoveryEmails(true);
+    try {
+      const recoveryEmails = await tatchi.getRecoveryEmails(accountIdToRecover);
+      const hasAny = recoveryEmails.length > 0;
+      setHasRecoveryEmailSet(hasAny);
+      if (!hasAny) {
+        log.setOutputText("error", recoveryEmailRequiredMessage);
+        return;
+      }
+    } catch {
+      setHasRecoveryEmailSet(null);
+    } finally {
+      setIsCheckingRecoveryEmails(false);
+    }
 
     setIsLoading(true);
     log.clearOutput();
@@ -165,9 +213,6 @@ export function Step4RecoverWithEmail({
       setPendingNearPublicKey(startResult.nearPublicKey);
       const extractedRequestId = getRequestIdFromMailtoUrl(startResult.mailtoUrl);
       if (extractedRequestId) setRequestId(extractedRequestId);
-
-      if (extractedRequestId) log.appendOutput("ok", `Request ID: ${extractedRequestId}`);
-      log.appendOutput("ok", `New public key (new_public_key): ${startResult.nearPublicKey}`);
 
       try {
         window.open(startResult.mailtoUrl, "_blank", "noopener,noreferrer");
@@ -228,35 +273,29 @@ export function Step4RecoverWithEmail({
             )}
           </p>
           <p className="helper">
-            Make sure you send the recovery email from your designated recovery address (set in Step 02). This page will
-            keep polling until the on-chain recovery finishes.
+            Send the recovery email from your designated recovery address (set in Step 02).
+            This page polls until the on-chain recovery finishes.
           </p>
-          {(requestId || pendingNearPublicKey) && (
-            <div className="chip-row">
-              {requestId && <span className="chip">request_id: {requestId}</span>}
-              {pendingNearPublicKey && <span className="chip">{pendingNearPublicKey}</span>}
-            </div>
-          )}
-          {isPolling && accountIdToRecover && recoverAccountExplorerUrl && (
-            <p className="helper">
-              Polling… {pollingSeconds}s ·{" "}
-              <a className="mailto" href={recoverAccountExplorerUrl} target="_blank" rel="noopener noreferrer">
-                {accountIdToRecover}
-              </a>
-            </p>
+          {hasRecoveryEmailSet === false && <p className="helper helper-strong">{recoveryEmailRequiredMessage}</p>}
+          {isCheckingRecoveryEmails && <p className="helper">Checking recovery email settings…</p>}
+          {isPolling && (
+            <p className="helper helper-strong">Email verification takes a minute, polling {pollingSeconds}s...</p>
           )}
           <button type="button" onClick={recoverWithEmail} disabled={isDisabled} aria-busy={isLoading}>
             {isLoading && <span className="spinner" aria-hidden="true" />}
             {isLoading ? "Recovering..." : "Recover account with email"}
           </button>
           {mailtoUrl && (
-            <a className="mailto" href={mailtoUrl} target="_blank" rel="noopener noreferrer">
-              Open recovery email draft
-            </a>
+            <p className="helper">
+              If an email doesn't show, click here:{" "}
+              <a className="mailto" href={mailtoUrl} target="_blank" rel="noopener noreferrer">
+                Open recovery email draft
+              </a>
+            </p>
           )}
           <Output state={log.output} />
         </div>
-        {!canRecover && (
+        {!canAttemptRecovery && (
           <p className="helper">
             Recovery is available only after a prior login is stored locally, and you are logged out.
           </p>

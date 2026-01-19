@@ -1,3 +1,4 @@
+:root,
 [data-w3a-theme="light"] {
   --w3a-colors-primary: oklch(0.56 0.158 255);
   --w3a-colors-primaryHover: oklch(0.66 0.180 255);
@@ -15,7 +16,6 @@
   --w3a-colors-surface2: oklch(0.915 0.0125 240);
   --w3a-colors-surface3: oklch(0.88 0.015 240);
   --w3a-colors-surface4: oklch(0.84 0.0175 240);
-  --w3a-colors-hover: oklch(0.95 0.005 240);
   --w3a-colors-active: oklch(0.88 0.01 240);
   --w3a-colors-focus: oklch(0.74 0.166 255);
   --w3a-colors-success: oklch(0.66 0.180 255);
@@ -84,6 +84,7 @@
 
 :root {
   color-scheme: light;
+  font-size: 110%;
   --font-sans: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Monaco, "Courier New", monospace;
   --paper: var(--w3a-colors-colorBackground);
@@ -318,6 +319,12 @@ input, textarea {
 
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--w3a-colors-textMuted);
+  opacity: 1;
+}
+
 input:focus-visible,
 textarea:focus-visible,
 button:focus-visible,
@@ -395,7 +402,6 @@ button {
   border: none;
   border-radius: 999px;
   padding: 10px 18px;
-  font-weight: 600;
   font-family: var(--font-sans);
   background: var(--w3a-colors-buttonBackground);
   color: var(--w3a-colors-textButton);
@@ -404,14 +410,8 @@ button {
   gap: 8px;
   cursor: pointer;
   transition: box-shadow 0.2s ease;
-  box-shadow: 0 12px 30px oklch(0.66 0.180 255 / 0.25);
   min-height: 44px;
   font-size: 1rem;
-}
-
-button:hover:not(:disabled) {
-  background: var(--w3a-colors-buttonHoverBackground);
-  box-shadow: 0 14px 34px oklch(0.66 0.180 255 / 0.28);
 }
 
 button:disabled {
@@ -438,6 +438,11 @@ button:disabled {
   margin: 0;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.helper-strong {
+  color: var(--ink);
+  font-weight: 600;
 }
 
 .helper2 {
@@ -495,9 +500,36 @@ button:disabled {
   transform: none !important;
 }
 
+.toast-close-button,
+[data-sonner-toast][data-styled="true"] [data-close-button] {
+  min-height: unset !important;
+  border: none !important;
+}
+
 .toast-close-button:hover {
   background: inherit !important;
   border-color: inherit !important;
+}
+
+[data-sonner-toast][data-styled="true"][data-type="success"],
+[data-sonner-toast][data-styled="true"][data-type="error"] {
+  background: var(--w3a-colors-colorBackground) !important;
+}
+
+[data-sonner-toast][data-styled="true"][data-type="success"] {
+  border-color: var(--w3a-colors-primaryHover) !important;
+  color: var(--w3a-colors-primary) !important;
+}
+
+[data-sonner-toast][data-styled="true"][data-type="success"] [data-description] {
+  color: var(--w3a-colors-textSecondary) !important;
+}
+
+[data-sonner-toast][data-styled="true"][data-type="success"] [data-close-button] {
+  background: var(--w3a-colors-colorBackground) !important;
+  border-color: transparent !important;
+  border: none !important;
+  color: var(--w3a-colors-primary) !important;
 }
 
 .wallet-status-fixed {
@@ -507,6 +539,13 @@ button:disabled {
   z-index: 1000;
   margin: 0;
   max-width: calc(100vw - 32px);
+}
+
+.top-right {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
 }
 
 @keyframes spin {
@@ -524,6 +563,11 @@ button:disabled {
     left: 12px;
     bottom: 12px;
     max-width: calc(100vw - 24px);
+  }
+
+  .top-right {
+    top: 12px;
+    right: 12px;
   }
 
   .row {

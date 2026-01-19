@@ -6,13 +6,14 @@ import { Step2SetRecoveryEmails } from "../components/Step2SetRecoveryEmails";
 import { Step3Logout } from "../components/Step3Logout";
 import { Step4RecoverWithEmail } from "../components/Step4RecoverWithEmail";
 import { Step5TestTransfer } from "../components/Step5TestTransfer";
+import { TatchiProfileSettingsButton } from "../components/TatchiProfileSettingsButton";
 
 const env = import.meta.env;
 
 const DEFAULT_ACCOUNT_ID = env.VITE_EXAMPLE_ACCOUNT_ID || "";
 const WEBAUTHN_CONTRACT_ID = env.VITE_WEBAUTHN_CONTRACT_ID || "w3a-v1.testnet";
-const EMAIL_RECOVERER_CONTRACT_ID = env.VITE_EMAIL_RECOVERER_CONTRACT_ID || "";
-const DKIM_VERIFIER_CONTRACT_ID = env.VITE_DKIM_VERIFIER_CONTRACT_ID || "";
+const EMAIL_RECOVERER_CONTRACT_ID = env.VITE_EMAIL_RECOVERER_CONTRACT_ID || "email-recoverer-v1.testnet";
+const DKIM_VERIFIER_CONTRACT_ID = env.VITE_DKIM_VERIFIER_CONTRACT_ID || "email-dkim-verifier-v1.testnet";
 
 export function HomePage() {
   const { loginState, tatchi } = useTatchi();
@@ -51,6 +52,9 @@ export function HomePage() {
 
   return (
     <Layout>
+      <div className="top-right">
+        <TatchiProfileSettingsButton />
+      </div>
       <header className="hero">
         <div>
           <p className="eyebrow">Passkey Accounts + Outlayer example</p>
@@ -104,18 +108,16 @@ export function HomePage() {
             <div className="stack">
               <ol className="helper">
                 <li>
+                  An <span className="inline-highlight">EmailRecoverer</span> contract is set up for your account when
+                  you set a recovery email.
+                </li>
+                <li>
                   You send a recovery email to a Cloudflare Worker (the relayer).
                 </li>
                 <li>
-                  The Worker encrypts the raw email using an encryption public key published by the Email DKIM Verifier
-                  contract (derived inside Outlayer), then submits the encrypted email to the{" "}
-                  <span className="inline-highlight">EmailRecoverer</span> contract on your{" "}
-                  <span className="inline-highlight">near.near</span> smart account.
-                </li>
-                <li>
-                  The EmailRecoverer contract calls into the global{" "}
-                  <span className="inline-highlight">Email DKIM Verifier</span> contract, which asks Outlayer to run a
-                  WASI worker inside a TEE.
+                  The Worker encrypts the raw email using an encryption public key published by an Outlayer worker
+                  inside a TEE, then submits the encrypted email to your NEAR smart account, which forwards the email to
+                  Outlayer.
                 </li>
                 <li>
                   Outlayer decrypts the email in the TEE, verifies DKIM signatures (using DNS TXT records), and returns a
@@ -127,9 +129,12 @@ export function HomePage() {
               </ol>
 
               <p className="helper">
-                Passkey accounts are NEAR accounts deterministically derived from Passkeys. They use a local signer (your
-                device’s Passkey/WebAuthn) plus a threshold signer, so no server is required. Your Passkey is your wallet.
+                Passkey accounts are NEAR accounts derived from Passkeys.
+                They use a local signer (no server required) or a threshold signer (server required).
+                Your Passkey is your wallet.
               </p>
+
+              <br/>
 
               <div className="chip-row">
                 <a
@@ -138,8 +143,10 @@ export function HomePage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  GitHub: email-dkim-verifier-contract
+                  GitHub: Outlayer worker + email-dkim-verifier-contract
                 </a>
+              </div>
+              <div className="chip-row">
                 <a
                   className="link"
                   href="https://github.com/web3-authn/email-recoverer-contract"
@@ -150,33 +157,6 @@ export function HomePage() {
                 </a>
               </div>
 
-              {(emailRecovererExplorerUrl || dkimVerifierExplorerUrl) && (
-                <div className="stack">
-                  <p className="helper">Block explorer</p>
-                  {emailRecovererExplorerUrl && (
-                    <p className="helper">
-                      EmailRecoverer:{" "}
-                      <a className="mailto" href={emailRecovererExplorerUrl} target="_blank" rel="noopener noreferrer">
-                        {EMAIL_RECOVERER_CONTRACT_ID}
-                      </a>
-                    </p>
-                  )}
-                  {dkimVerifierExplorerUrl && (
-                    <p className="helper">
-                      Email DKIM Verifier:{" "}
-                      <a className="mailto" href={dkimVerifierExplorerUrl} target="_blank" rel="noopener noreferrer">
-                        {DKIM_VERIFIER_CONTRACT_ID}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              )}
-              {!emailRecovererExplorerUrl && !dkimVerifierExplorerUrl && (
-                <p className="helper">
-                  Set <span className="inline-highlight">VITE_EMAIL_RECOVERER_CONTRACT_ID</span> and{" "}
-                  <span className="inline-highlight">VITE_DKIM_VERIFIER_CONTRACT_ID</span> to show block explorer links.
-                </p>
-              )}
             </div>
           </section>
         </div>

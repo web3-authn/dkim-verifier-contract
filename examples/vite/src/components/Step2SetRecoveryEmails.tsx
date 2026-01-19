@@ -15,6 +15,12 @@ import {
   getNearTransactionExplorerUrl,
 } from "../utils/nearExplorer";
 
+const PROCESSING_TOAST_OPTIONS = {
+  duration: 4000,
+  dismissible: true,
+  classNames: { closeButton: "toast-close-button" },
+} as const;
+
 type Step2SetRecoveryEmailsProps = {
   targetAccountId: string;
 };
@@ -82,7 +88,7 @@ export function Step2SetRecoveryEmails({ targetAccountId }: Step2SetRecoveryEmai
         return;
       default:
         log.appendOutput("idle", event.message || String(event.phase));
-        toast.loading(event.message || "Processing...", { id: toastId });
+        toast.message(event.message || "Processing...", { id: toastId, ...PROCESSING_TOAST_OPTIONS });
     }
   };
 
