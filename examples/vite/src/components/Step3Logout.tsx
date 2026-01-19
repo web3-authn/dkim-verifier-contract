@@ -30,7 +30,7 @@ export function Step3Logout() {
     } catch (error) {
       const message = getErrorMessage(error);
       log.setOutputText("error", message);
-      toast.error(message || "Logout failed", { id: "logout" });
+      toast.error(message || "Logout failed", { id: "logout", classNames: { closeButton: "toast-close-button" } });
     } finally {
       setIsLoading(false);
     }

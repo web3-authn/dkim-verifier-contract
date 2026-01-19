@@ -27,39 +27,45 @@ export function Step2SetRecoveryEmails({ targetAccountId }: Step2SetRecoveryEmai
   const explorerBaseUrl = getNearExplorerBaseUrl(tatchi?.configs?.nearExplorerUrl);
 
   const onSetRecoveryEmailEvents = (event: ActionSSEEvent) => {
-    if (event.message) log.appendOutput("idle", event.message);
-
     const toastId = "set-recovery-email";
     if (
       event.phase === ActionPhase.ACTION_ERROR ||
       event.phase === ActionPhase.WASM_ERROR ||
       event.status === ActionStatus.ERROR
     ) {
-      toast.error(getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Failed to set recovery email"), {
-        id: toastId,
-      });
+      const message = getErrorMessage(
+        (event as { error?: unknown }).error ?? event.message ?? "Failed to set recovery email",
+      );
+      log.setOutputText("error", message);
+      toast.error(message, { id: toastId, classNames: { closeButton: "toast-close-button" } });
       return;
     }
 
     switch (event.phase) {
       case ActionPhase.STEP_1_PREPARATION:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Preparing transaction...", { id: toastId });
         return;
       case ActionPhase.STEP_2_USER_CONFIRMATION:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Awaiting confirmation...", { id: toastId });
         return;
       case ActionPhase.STEP_3_WEBAUTHN_AUTHENTICATION:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Authenticating...", { id: toastId });
         return;
       case ActionPhase.STEP_5_TRANSACTION_SIGNING_PROGRESS:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Signing transaction...", { id: toastId });
         return;
       case ActionPhase.STEP_7_BROADCASTING:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Broadcasting transaction...", { id: toastId });
         return;
       case ActionPhase.STEP_8_ACTION_COMPLETE:
         {
           const message = event.message || "Recovery email saved.";
+          log.appendOutput("ok", message);
           const txHash = extractNearTransactionHash(message);
           const txUrl = getNearTransactionExplorerUrl(explorerBaseUrl, txHash);
           toast.success(
@@ -75,6 +81,7 @@ export function Step2SetRecoveryEmails({ targetAccountId }: Step2SetRecoveryEmai
         }
         return;
       default:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Processing...", { id: toastId });
     }
   };
@@ -105,18 +112,20 @@ export function Step2SetRecoveryEmails({ targetAccountId }: Step2SetRecoveryEmai
     toast.loading("Saving recovery email…", { id: toastId });
 
     try {
-      const result = await tatchi.setRecoveryEmails(targetAccountId, [recoveryEmail], {
+      await tatchi.setRecoveryEmails(targetAccountId, [recoveryEmail], {
         onEvent: onSetRecoveryEmailEvents,
         confirmerText: {
           title: "Set Recovery Email",
           body: "Add a recovery email address for account recovery",
         },
       });
-      log.appendOutput("ok", result);
     } catch (error) {
       const message = getErrorMessage(error);
       log.setOutputText("error", message);
-      toast.error(message || "Failed to set recovery email", { id: toastId });
+      toast.error(message || "Failed to set recovery email", {
+        id: toastId,
+        classNames: { closeButton: "toast-close-button" },
+      });
     } finally {
       setIsLoading(false);
     }

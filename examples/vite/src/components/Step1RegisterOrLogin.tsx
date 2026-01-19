@@ -34,16 +34,17 @@ export function Step1RegisterOrLogin({
   const log = useOutputLog();
 
   const onRegisterEvents = (event: RegistrationSSEEvent) => {
-    if (event.message) log.appendOutput("idle", event.message);
-
     const toastId = "registration";
     if (event.phase === RegistrationPhase.REGISTRATION_ERROR || event.status === RegistrationStatus.ERROR) {
-      toast.error(
-        getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Registration failed"),
-        { id: toastId },
-      );
+      const message = getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Registration failed");
+      log.setOutputText("error", message);
+      toast.error(message, { id: toastId, classNames: { closeButton: "toast-close-button" } });
       return;
     }
+
+    const isComplete =
+      event.phase === RegistrationPhase.STEP_8_REGISTRATION_COMPLETE && event.status === RegistrationStatus.SUCCESS;
+    if (event.message) log.appendOutput(isComplete ? "ok" : "idle", event.message);
 
     switch (event.phase) {
       case RegistrationPhase.STEP_1_WEBAUTHN_VERIFICATION:
@@ -80,15 +81,16 @@ export function Step1RegisterOrLogin({
   };
 
   const onLoginEvents = (event: LoginSSEvent) => {
-    if (event.message) log.appendOutput("idle", event.message);
-
     const toastId = "login";
     if (event.phase === LoginPhase.LOGIN_ERROR || event.status === LoginStatus.ERROR) {
-      toast.error(getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Login failed"), {
-        id: toastId,
-      });
+      const message = getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Login failed");
+      log.setOutputText("error", message);
+      toast.error(message, { id: toastId, classNames: { closeButton: "toast-close-button" } });
       return;
     }
+
+    const isComplete = event.phase === LoginPhase.STEP_4_LOGIN_COMPLETE && event.status === LoginStatus.SUCCESS;
+    if (event.message) log.appendOutput(isComplete ? "ok" : "idle", event.message);
 
     switch (event.phase) {
       case LoginPhase.STEP_1_PREPARATION:
@@ -136,15 +138,15 @@ export function Step1RegisterOrLogin({
     toast.loading(mode === "login" ? "Starting login..." : "Starting registration...", { id: toastId });
 
     try {
-      const result =
-        mode === "login"
-          ? await loginAndCreateSession(targetAccountId, { onEvent: onLoginEvents })
-          : await registerPasskey(targetAccountId, { onEvent: onRegisterEvents });
-      log.appendOutput("ok", result);
+      if (mode === "login") {
+        await loginAndCreateSession(targetAccountId, { onEvent: onLoginEvents });
+      } else {
+        await registerPasskey(targetAccountId, { onEvent: onRegisterEvents });
+      }
     } catch (error) {
       const message = getErrorMessage(error);
       log.setOutputText("error", message);
-      toast.error(message || "Authentication failed", { id: toastId });
+      toast.error(message || "Authentication failed", { id: toastId, classNames: { closeButton: "toast-close-button" } });
     } finally {
       setIsLoading(false);
     }

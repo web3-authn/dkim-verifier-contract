@@ -30,40 +30,43 @@ export function Step5TestTransfer({ receiverId }: Step5TestTransferProps) {
   const log = useOutputLog();
 
   const onTransferEvents = (event: ActionSSEEvent) => {
-    const logLine = event.message || String(event.phase);
-    log.appendOutput("idle", logLine);
-
     const toastId = "test-transfer";
     if (
       event.phase === ActionPhase.ACTION_ERROR ||
       event.phase === ActionPhase.WASM_ERROR ||
       event.status === ActionStatus.ERROR
     ) {
-      toast.error(getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Transfer failed"), {
-        id: toastId,
-      });
+      const message = getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Transfer failed");
+      log.setOutputText("error", message);
+      toast.error(message, { id: toastId, classNames: { closeButton: "toast-close-button" } });
       return;
     }
 
     switch (event.phase) {
       case ActionPhase.STEP_1_PREPARATION:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Preparing transaction...", { id: toastId });
         return;
       case ActionPhase.STEP_2_USER_CONFIRMATION:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Awaiting confirmation...", { id: toastId });
         return;
       case ActionPhase.STEP_3_WEBAUTHN_AUTHENTICATION:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Authenticating...", { id: toastId });
         return;
       case ActionPhase.STEP_5_TRANSACTION_SIGNING_PROGRESS:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Signing transaction...", { id: toastId });
         return;
       case ActionPhase.STEP_7_BROADCASTING:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Broadcasting transaction...", { id: toastId });
         return;
       case ActionPhase.STEP_8_ACTION_COMPLETE:
         {
           const message = event.message || "Transfer submitted.";
+          log.appendOutput("ok", message);
           const txHash = extractNearTransactionHash(message);
           const explorerBaseUrl = getNearExplorerBaseUrl(tatchi?.configs?.nearExplorerUrl);
           const txUrl = getNearTransactionExplorerUrl(explorerBaseUrl, txHash);
@@ -80,6 +83,7 @@ export function Step5TestTransfer({ receiverId }: Step5TestTransferProps) {
         }
         return;
       default:
+        log.appendOutput("idle", event.message || String(event.phase));
         toast.loading(event.message || "Processing...", { id: toastId });
     }
   };
@@ -109,7 +113,7 @@ export function Step5TestTransfer({ receiverId }: Step5TestTransferProps) {
     toast.loading("Preparing transfer…", { id: toastId });
 
     try {
-      const result = await tatchi.executeAction({
+      await tatchi.executeAction({
         nearAccountId: loginState.nearAccountId,
         receiverId,
         actionArgs: {
@@ -124,11 +128,10 @@ export function Step5TestTransfer({ receiverId }: Step5TestTransferProps) {
           },
         },
       });
-      log.appendOutput("ok", result);
     } catch (error) {
       const message = getErrorMessage(error);
       log.setOutputText("error", message);
-      toast.error(message || "Transfer failed", { id: toastId });
+      toast.error(message || "Transfer failed", { id: toastId, classNames: { closeButton: "toast-close-button" } });
     } finally {
       setIsLoading(false);
     }

@@ -455,9 +455,10 @@ button:disabled {
   color: var(--w3a-colors-textSecondary);
   font-family: var(--font-mono);
   font-size: 0.85rem;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--w3a-colors-borderSecondary);
-  white-space: pre-wrap;
+  white-space: nowrap;
 }
 
 .output[data-status="error"] {
@@ -484,6 +485,19 @@ button:disabled {
 
 .mailto:hover {
   text-decoration: underline;
+}
+
+.toast-close-button {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+}
+
+.toast-close-button:hover {
+  background: inherit !important;
+  border-color: inherit !important;
 }
 
 .wallet-status-fixed {

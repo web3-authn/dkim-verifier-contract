@@ -84,9 +84,8 @@ export function Step4RecoverWithEmail({
       return;
     }
     if (event.phase === EmailRecoveryPhase.ERROR || event.status === EmailRecoveryStatus.ERROR) {
-      toast.error(getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Email recovery failed"), {
-        id: toastId,
-      });
+      const message = getErrorMessage((event as { error?: unknown }).error ?? event.message ?? "Email recovery failed");
+      toast.error(message, { id: toastId, classNames: { closeButton: "toast-close-button" } });
       return;
     }
 
@@ -198,7 +197,7 @@ export function Step4RecoverWithEmail({
     } catch (error) {
       const message = getErrorMessage(error);
       log.setOutputText("error", message);
-      toast.error(message || "Email recovery failed", { id: toastId });
+      toast.error(message || "Email recovery failed", { id: toastId, classNames: { closeButton: "toast-close-button" } });
     } finally {
       setIsLoading(false);
     }

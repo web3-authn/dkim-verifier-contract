@@ -11,7 +11,7 @@ import "./index.css";
 const env = import.meta.env;
 
 const relayerUrl = env.VITE_RELAYER_URL || "https://relay.tatchi.xyz";
-const recoverEmailRecipient = env.RECOVER_EMAIL_RECIPIENT;
+const recoverEmailRecipient = env.VITE_RECOVER_EMAIL_RECIPIENT || "recover-testnet@web3authn.org";
 const emailRecovererContractId = env.VITE_EMAIL_RECOVERER_CONTRACT_ID;
 const dkimVerifierContractId = env.VITE_DKIM_VERIFIER_CONTRACT_ID;
 const zkEmailVerifierContractId = env.VITE_ZK_EMAIL_VERIFIER_CONTRACT_ID;
