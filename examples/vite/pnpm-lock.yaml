@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@tatchi-xyz/sdk':
-        specifier: ^0.40.0
-        version: 0.40.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        specifier: ^0.46.0
+        version: 0.46.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react:
         specifier: ^19.1.1
         version: 19.2.3
@@ -469,8 +469,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@tatchi-xyz/sdk@0.40.0':
-    resolution: {integrity: sha512-hPR7yQv1ju+XSxq0bctJ9ZSKfWTJYP1mTprQJNZPChf9JsRwxy6pkvENTnNc4Uy9JIOnJmp/DWkMfSAXLE8CCw==}
+  '@tatchi-xyz/sdk@0.46.0':
+    resolution: {integrity: sha512-0uWcLnEoEuYfhG7Pi5GUT4i+PXu5OqxF811LdcPI4/l3JDopUpQ0e6rLuBx1eOshOUaCO41V7Vb6X9gMLQ2MMA==}
     peerDependencies:
       express: '>=4.17.0'
       jsqr: '>=1.4.0'
@@ -1685,7 +1685,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.54.0':
     optional: true
 
-  '@tatchi-xyz/sdk@0.40.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@tatchi-xyz/sdk@0.46.0(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@19.2.7)
       '@noble/ciphers': 2.1.1
