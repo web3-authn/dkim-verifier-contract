@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "sonner";
 
@@ -13,7 +13,6 @@ import "./index.css";
 const env = import.meta.env;
 
 const config: TatchiConfigsInput = {
-  walletTheme: "light",
   contractId: env.VITE_WEBAUTHN_CONTRACT_ID || "w3a-v1.testnet",
   nearNetwork: env.VITE_NEAR_NETWORK || "testnet",
   nearRpcUrl: env.VITE_NEAR_RPC_URL || "https://test.rpc.fastnear.com",
@@ -38,15 +37,33 @@ const config: TatchiConfigsInput = {
 
 const appRoot = document.getElementById("app-root");
 
-if (!appRoot) throw new Error('Missing element: #app-root');
+type ThemeMode = "light" | "dark";
 
-createRoot(appRoot).render(
-  <StrictMode>
-    <TatchiPasskeyProvider config={config}>
+const getInitialTheme = (): ThemeMode => {
+  if (typeof document === "undefined") return "light";
+  return document.documentElement.getAttribute("data-w3a-theme") === "dark" ? "dark" : "light";
+};
+
+function App() {
+  const [theme, setTheme] = useState<ThemeMode>(() => getInitialTheme());
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.setAttribute("data-w3a-theme", theme);
+  }, [theme]);
+
+  return (
+    <TatchiPasskeyProvider config={config} theme={{ theme, setTheme }}>
       <Toaster richColors closeButton />
       <ProfileMenuControlProvider>
         <HomePage />
       </ProfileMenuControlProvider>
     </TatchiPasskeyProvider>
+  );
+}
+
+createRoot(appRoot).render(
+  <StrictMode>
+    <App />
   </StrictMode>,
 );
