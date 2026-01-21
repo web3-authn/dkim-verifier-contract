@@ -286,7 +286,7 @@ export function Step4RecoverWithEmail({
             {isLoading ? "Recovering..." : "Recover account with email"}
           </button>
           {mailtoUrl && (
-            <p className="helper">
+            <p className="helper helper-strong">
               If an email doesn't show, click here:{" "}
               <a className="mailto" href={mailtoUrl} target="_blank" rel="noopener noreferrer">
                 Open recovery email draft
