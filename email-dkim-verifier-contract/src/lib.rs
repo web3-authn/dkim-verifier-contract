@@ -196,11 +196,9 @@ impl EmailDkimVerifier {
             outlayer_encryption_public_key: OUTLAYER_ENCRYPTION_PUBKEY.to_string(),
             outlayer_worker_wasm_url: String::new(),
             outlayer_worker_wasm_hash: String::new(),
-            outlayer_contract_id: "outlayer.near"
-                .parse()
-                .expect("Invalid Outlayer account ID"),
+            outlayer_contract_id: "outlayer.near".parse().expect("Invalid Outlayer account ID"),
             // Account which set the secrets in https://outlayer.fastnear.com/secrets
-            secrets_owner_id: "email-dkim-verifier-v1.near".to_string(),
+            secrets_owner_id: "email-dkim-verifier-v1.near".parse().expect("Invalid secrets owner account ID"),
             secrets_profile: "main".to_string(),
         }
     }
