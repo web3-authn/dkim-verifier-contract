@@ -46,6 +46,18 @@ jobs:
 
       - name: Upload wasm to R2
         run: |
+          clean() {
+            local s="${1:-}"
+            s="$(printf '%s' "$s" | tr -d '\r\n')"
+            s="${s#"${s%%[![:space:]]*}"}"
+            s="${s%"${s##*[![:space:]]}"}"
+            printf '%s' "$s"
+          }
+
+          R2_ENDPOINT="$(clean "${R2_ENDPOINT:-}")"
+          R2_BUCKET="$(clean "${R2_BUCKET:-}")"
+          OBJECT_KEY="$(clean "${OBJECT_KEY:-}")"
+
           if [[ -z "${R2_ACCESS_KEY_ID:-}" || -z "${R2_SECRET_ACCESS_KEY:-}" ]]; then
             echo "Missing R2 credentials (R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY)." >&2
             exit 1
@@ -54,12 +66,18 @@ jobs:
             echo "Missing R2 config (R2_ENDPOINT / R2_BUCKET)." >&2
             exit 1
           fi
+          if [[ "${R2_ENDPOINT}" != http://* && "${R2_ENDPOINT}" != https://* ]]; then
+            echo "R2_ENDPOINT must start with http(s):// (got: ${R2_ENDPOINT})" >&2
+            exit 1
+          fi
           OBJECT_KEY="${OBJECT_KEY#/}"
           BUCKET_BASE_URL="${R2_ENDPOINT%/}"
           if [[ "${BUCKET_BASE_URL}" != */"${R2_BUCKET}" ]]; then
             BUCKET_BASE_URL="${BUCKET_BASE_URL}/${R2_BUCKET}"
           fi
           OBJECT_URL="${BUCKET_BASE_URL%/}/${OBJECT_KEY}"
+          printf 'Uploading to OBJECT_URL=%q\n' "${OBJECT_URL}"
+          printf 'OBJECT_URL hex bytes:'; printf '%s' "${OBJECT_URL}" | od -An -tx1
           curl -fSs --retry 3 --retry-delay 2 \
             --aws-sigv4 "aws:amz:auto:s3" \
             --user "${R2_ACCESS_KEY_ID}:${R2_SECRET_ACCESS_KEY}" \
@@ -70,12 +88,25 @@ jobs:
 
       - name: Upload wasm hash to R2
         run: |
+          clean() {
+            local s="${1:-}"
+            s="$(printf '%s' "$s" | tr -d '\r\n')"
+            s="${s#"${s%%[![:space:]]*}"}"
+            s="${s%"${s##*[![:space:]]}"}"
+            printf '%s' "$s"
+          }
+
+          R2_ENDPOINT="$(clean "${R2_ENDPOINT:-}")"
+          R2_BUCKET="$(clean "${R2_BUCKET:-}")"
+          OBJECT_KEY="$(clean "${OBJECT_KEY:-}")"
+
           OBJECT_KEY="${OBJECT_KEY#/}"
           BUCKET_BASE_URL="${R2_ENDPOINT%/}"
           if [[ "${BUCKET_BASE_URL}" != */"${R2_BUCKET}" ]]; then
             BUCKET_BASE_URL="${BUCKET_BASE_URL}/${R2_BUCKET}"
           fi
           OBJECT_URL="${BUCKET_BASE_URL%/}/${OBJECT_KEY}.sha256"
+          printf 'Uploading to OBJECT_URL=%q\n' "${OBJECT_URL}"
           curl -fSs --retry 3 --retry-delay 2 \
             --aws-sigv4 "aws:amz:auto:s3" \
             --user "${R2_ACCESS_KEY_ID}:${R2_SECRET_ACCESS_KEY}" \
@@ -86,6 +117,18 @@ jobs:
 
       - name: Publish latest.wasm pointer
         run: |
+          clean() {
+            local s="${1:-}"
+            s="$(printf '%s' "$s" | tr -d '\r\n')"
+            s="${s#"${s%%[![:space:]]*}"}"
+            s="${s%"${s##*[![:space:]]}"}"
+            printf '%s' "$s"
+          }
+
+          R2_ENDPOINT="$(clean "${R2_ENDPOINT:-}")"
+          R2_BUCKET="$(clean "${R2_BUCKET:-}")"
+          OBJECT_KEY="$(clean "${OBJECT_KEY:-}")"
+
           OBJECT_KEY="${OBJECT_KEY#/}"
           DIR="$(dirname "${OBJECT_KEY}")"
           LATEST_KEY="${DIR}/latest.wasm"
@@ -104,6 +147,18 @@ jobs:
 
       - name: Publish latest.wasm.sha256 pointer
         run: |
+          clean() {
+            local s="${1:-}"
+            s="$(printf '%s' "$s" | tr -d '\r\n')"
+            s="${s#"${s%%[![:space:]]*}"}"
+            s="${s%"${s##*[![:space:]]}"}"
+            printf '%s' "$s"
+          }
+
+          R2_ENDPOINT="$(clean "${R2_ENDPOINT:-}")"
+          R2_BUCKET="$(clean "${R2_BUCKET:-}")"
+          OBJECT_KEY="$(clean "${OBJECT_KEY:-}")"
+
           OBJECT_KEY="${OBJECT_KEY#/}"
           DIR="$(dirname "${OBJECT_KEY}")"
           LATEST_KEY="${DIR}/latest.wasm.sha256"
@@ -122,6 +177,19 @@ jobs:
 
       - name: Publish latest.json manifest
         run: |
+          clean() {
+            local s="${1:-}"
+            s="$(printf '%s' "$s" | tr -d '\r\n')"
+            s="${s#"${s%%[![:space:]]*}"}"
+            s="${s%"${s##*[![:space:]]}"}"
+            printf '%s' "$s"
+          }
+
+          R2_ENDPOINT="$(clean "${R2_ENDPOINT:-}")"
+          R2_BUCKET="$(clean "${R2_BUCKET:-}")"
+          R2_PUBLIC_BASE_URL="$(clean "${R2_PUBLIC_BASE_URL:-}")"
+          OBJECT_KEY="$(clean "${OBJECT_KEY:-}")"
+
           OBJECT_KEY="${OBJECT_KEY#/}"
           DIR="$(dirname "${OBJECT_KEY}")"
           HASH="$(cat worker-build/dist/email-dkim-verifier-contract.wasm.sha256)"
@@ -164,6 +232,18 @@ jobs:
 
       - name: Publish summary
         run: |
+          clean() {
+            local s="${1:-}"
+            s="$(printf '%s' "$s" | tr -d '\r\n')"
+            s="${s#"${s%%[![:space:]]*}"}"
+            s="${s%"${s##*[![:space:]]}"}"
+            printf '%s' "$s"
+          }
+
+          R2_BUCKET="$(clean "${R2_BUCKET:-}")"
+          R2_PUBLIC_BASE_URL="$(clean "${R2_PUBLIC_BASE_URL:-}")"
+          OBJECT_KEY="$(clean "${OBJECT_KEY:-}")"
+
           OBJECT_KEY="${OBJECT_KEY#/}"
           DIR="$(dirname "${OBJECT_KEY}")"
           HASH="$(cat worker-build/dist/email-dkim-verifier-contract.wasm.sha256)"
