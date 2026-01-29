@@ -12,7 +12,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: testnet
+    environment: cloudflare
     permissions:
       contents: read
       deployments: write

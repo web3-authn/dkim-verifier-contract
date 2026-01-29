@@ -20,7 +20,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: testnet
+    environment: cloudflare
     permissions:
       contents: read
     env:
