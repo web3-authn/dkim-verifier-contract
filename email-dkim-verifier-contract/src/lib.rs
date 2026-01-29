@@ -10,7 +10,7 @@ use near_sdk::{
 use schemars::JsonSchema;
 use tee_verify::AeadContext;
 
-const OUTLAYER_CONTRACT_ID: &str = "outlayer.testnet";
+const OUTLAYER_CONTRACT_ID: &str = "outlayer.near";
 // Default public encryption key for the Outlayer worker (can be overridden via contract state).
 const OUTLAYER_ENCRYPTION_PUBKEY: &str = "";
 // Minimum deposit forwarded to OutLayer (0.01 NEAR).
