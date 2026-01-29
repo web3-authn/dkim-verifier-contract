@@ -88,6 +88,13 @@ For local testing (outside Outlayer), the worker also accepts `OUTLAYER_WORKER_S
    # or: sh ./scripts/set_outlayer_keys.sh
    ```
 
+If you want the secrets owner to be the contract account (common for Outlayer secrets),
+set it explicitly:
+```bash
+just set-secrets-owner
+# or: sh ./scripts/set_secrets_owner_id.sh
+```
+
 After rotation:
 
 - The worker decrypts using the new `sk_worker`.

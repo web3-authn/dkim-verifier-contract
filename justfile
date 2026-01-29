@@ -6,6 +6,8 @@ default:
     @echo "  just upgrade-dev - Upgrade contract in development"
     @echo "  just request     - Call request_email_verification with sample DKIM email"
     @echo "  just set-outlayer-keys - Refresh worker public key in contract"
+    @echo "  just set-outlayer-contract - Set Outlayer contract ID used for worker calls"
+    @echo "  just set-secrets-owner - Set secrets owner ID to CONTRACT_ID"
     @echo "  just set-outlayer-wasm - Set worker wasm URL + hash in contract (defaults to latest.json)"
     @echo "  just vite-dev    - Run Vite example app"
     @echo ""
@@ -39,6 +41,14 @@ request:
 set-outlayer-keys:
     @echo "Setting Outlayer worker + contract keys..."
     sh ./scripts/set_outlayer_keys.sh
+
+set-outlayer-contract:
+    @echo "Setting Outlayer contract ID used for worker calls..."
+    sh ./scripts/set_outlayer_contract_id.sh
+
+set-secrets-owner:
+    @echo "Setting secrets owner ID to CONTRACT_ID..."
+    sh ./scripts/set_secrets_owner_id.sh
 
 set-outlayer-wasm:
     @echo "Setting Outlayer worker wasm source..."

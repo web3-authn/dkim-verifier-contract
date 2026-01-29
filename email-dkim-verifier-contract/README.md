@@ -16,6 +16,13 @@ The OutLayer WASI worker that fetches TXT records lives in the **root crate** (`
 
 ## Contract Interface
 
+### Outlayer routing
+
+- Default Outlayer contract: `outlayer.near`
+- Owner-only override (sign as the contract account):
+  - View: `get_outlayer_contract_id()`
+  - Set: `set_outlayer_contract_id(outlayer_contract_id: AccountId)`
+
 ### `request_email_verification`
 
 ```rust

@@ -2,9 +2,8 @@ use crate::{
     ext_outlayer, ext_self,
     EmailDkimVerifier, OutlayerInputArgs, VerificationResult,
     OutlayerWorkerResponse, MIN_DEPOSIT,
-    OUTLAYER_CONTRACT_ID,
     GET_DNS_RECORDS_METHOD,
-    SecretsReference, SECRETS_OWNER_ID, SECRETS_PROFILE,
+    SecretsReference,
 };
 pub mod parsers;
 pub mod dkim;
@@ -93,11 +92,11 @@ pub fn request_email_verification_onchain_inner(
     });
 
     let secrets = SecretsReference {
-        profile: SECRETS_PROFILE.to_string(),
-        account_id: SECRETS_OWNER_ID.parse().unwrap(),
+        profile: contract.get_secrets_profile(),
+        account_id: contract.get_secrets_owner_id(),
     };
 
-    ext_outlayer::ext(OUTLAYER_CONTRACT_ID.parse().unwrap())
+    ext_outlayer::ext(contract.get_outlayer_contract_id())
         .with_attached_deposit(NearToken::from_yoctonear(outlayer_deposit))
         .with_unused_gas_weight(1)
         .request_execution(

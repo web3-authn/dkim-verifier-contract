@@ -10,14 +10,10 @@ use near_sdk::{
 use schemars::JsonSchema;
 use tee_verify::AeadContext;
 
-const OUTLAYER_CONTRACT_ID: &str = "outlayer.near";
 // Default public encryption key for the Outlayer worker (can be overridden via contract state).
 const OUTLAYER_ENCRYPTION_PUBKEY: &str = "";
 // Minimum deposit forwarded to OutLayer (0.01 NEAR).
 pub const MIN_DEPOSIT: u128 = 10_000_000_000_000_000_000_000;
-// Account which set the secrets in https://outlayer.fastnear.com/secrets
-pub const SECRETS_OWNER_ID: &str = "email-dkim-verifier-v1.testnet";
-pub const SECRETS_PROFILE: &str = "main";
 
 // Method names on Outlayer worker
 pub const GET_DNS_RECORDS_METHOD: &str = "get-dns-records";
@@ -29,6 +25,9 @@ pub struct EmailDkimVerifier {
     outlayer_encryption_public_key: String,
     outlayer_worker_wasm_url: String,
     outlayer_worker_wasm_hash: String,
+    outlayer_contract_id: AccountId,
+    secrets_owner_id: AccountId,
+    secrets_profile: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, BorshSerialize, BorshDeserialize)]
@@ -110,7 +109,7 @@ struct ExecutionParams {
 ///
 /// is equivalent on chain to the CLI example from the OutLayer docs:
 /// ```text
-/// near call outlayer.testnet request_execution '{
+/// near call outlayer.<network> request_execution '{
 ///   "source": { ... },
 ///   "resource_limits": { ... },
 ///   "input_data": "{...}",
@@ -197,6 +196,12 @@ impl EmailDkimVerifier {
             outlayer_encryption_public_key: OUTLAYER_ENCRYPTION_PUBKEY.to_string(),
             outlayer_worker_wasm_url: String::new(),
             outlayer_worker_wasm_hash: String::new(),
+            outlayer_contract_id: "outlayer.near"
+                .parse()
+                .expect("Invalid Outlayer account ID"),
+            // Account which set the secrets in https://outlayer.fastnear.com/secrets
+            secrets_owner_id: "email-dkim-verifier-v1.near".to_string(),
+            secrets_profile: "main".to_string(),
         }
     }
 
@@ -214,6 +219,54 @@ impl EmailDkimVerifier {
             url: self.outlayer_worker_wasm_url.clone(),
             hash: self.outlayer_worker_wasm_hash.clone(),
         }
+    }
+
+    pub fn get_outlayer_contract_id(&self) -> AccountId {
+        self.outlayer_contract_id.clone()
+    }
+
+    pub fn get_secrets_owner_id(&self) -> AccountId {
+        self.secrets_owner_id.clone()
+    }
+
+    pub fn get_secrets_profile(&self) -> String {
+        self.secrets_profile.clone()
+    }
+
+    #[payable]
+    pub fn set_outlayer_contract_id(&mut self, outlayer_contract_id: AccountId) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            env::current_account_id(),
+            "Only the contract owner can set the Outlayer contract ID"
+        );
+
+        self.outlayer_contract_id = outlayer_contract_id;
+    }
+
+    #[payable]
+    pub fn set_secrets_owner_id(&mut self, secrets_owner_id: AccountId) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            env::current_account_id(),
+            "Only the contract owner can set the secrets owner ID"
+        );
+
+        self.secrets_owner_id = secrets_owner_id;
+    }
+
+    #[payable]
+    pub fn set_secrets_profile(&mut self, secrets_profile: String) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            env::current_account_id(),
+            "Only the contract owner can set the secrets profile"
+        );
+        let secrets_profile = secrets_profile.trim().to_string();
+        if secrets_profile.is_empty() {
+            env::panic_str("secrets_profile must not be empty");
+        }
+        self.secrets_profile = secrets_profile;
     }
 
     #[payable]
@@ -281,8 +334,8 @@ impl EmailDkimVerifier {
         ).to_json_string();
 
         let secrets = SecretsReference {
-            profile: SECRETS_PROFILE.to_string(),
-            account_id: SECRETS_OWNER_ID.parse().unwrap(),
+            profile: self.get_secrets_profile(),
+            account_id: self.get_secrets_owner_id(),
         };
 
         let params = ExecutionParams {
@@ -291,7 +344,7 @@ impl EmailDkimVerifier {
             store_on_fastfs: false,
         };
 
-        ext_outlayer::ext(OUTLAYER_CONTRACT_ID.parse().unwrap())
+        ext_outlayer::ext(self.get_outlayer_contract_id())
             .with_attached_deposit(near_sdk::NearToken::from_yoctonear(MIN_DEPOSIT))
             .with_unused_gas_weight(1)
             .request_execution(
