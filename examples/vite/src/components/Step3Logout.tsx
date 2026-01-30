@@ -40,14 +40,18 @@ export function Step3Logout() {
     <div className="row">
       <aside className={`panel note ${isBlocked ? "is-disabled" : ""}`}>
         <h3>03 Logout</h3>
-        <p className="helper">Logout: simulate the user losing access to their account.</p>
+        <p className="helper">
+          Logout: simulate the user losing access to their account.
+        </p>
       </aside>
       <section className={`panel ${isBlocked ? "is-disabled" : ""}`}>
         <div className="panel-header">
           <h2>Logout</h2>
         </div>
         <div className="stack">
-          <p className="helper">Account recovery should be performed while logged out. Logout and clear the session.</p>
+          <p className="helper">
+            Account recovery should be performed while logged out. Logout and clear the session.
+          </p>
           <button type="button" onClick={handleLogout} disabled={isDisabled} aria-busy={isLoading}>
             {isLoading && <span className="spinner" aria-hidden="true" />}
             {isLoading ? "Logging out..." : "Logout"}

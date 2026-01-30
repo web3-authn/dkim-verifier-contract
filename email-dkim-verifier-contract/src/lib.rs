@@ -25,8 +25,14 @@ pub struct EmailDkimVerifier {
     outlayer_encryption_public_key: String,
     outlayer_worker_wasm_url: String,
     outlayer_worker_wasm_hash: String,
+    /// Optional Outlayer Project ID to use as the worker source, e.g. `alice.near/weather-api`.
+    /// When set (non-empty), Outlayer calls use `source: { Project: { project_id } }`.
+    outlayer_worker_project_id: String,
     outlayer_contract_id: AccountId,
     secrets_owner_id: AccountId,
+    /// Optional Outlayer Project ID to use for secrets binding, e.g. `alice.near/my-app`.
+    /// When set (non-empty), Outlayer calls use `secrets_ref: { profile, project_id }`.
+    secrets_project_id: String,
     secrets_profile: String,
 }
 
@@ -74,9 +80,10 @@ pub struct OutlayerWorkerWasmSource {
 
 #[derive(near_sdk::serde::Serialize, near_sdk::serde::Deserialize)]
 #[serde(crate = "near_sdk::serde")]
-struct SecretsReference {
-    profile: String,
-    account_id: AccountId,
+#[serde(untagged)]
+enum SecretsReference {
+    Account { profile: String, account_id: AccountId },
+    Project { profile: String, project_id: String },
 }
 
 #[derive(near_sdk::serde::Serialize, near_sdk::serde::Deserialize)]
@@ -190,15 +197,51 @@ impl OutlayerInputArgs {
 
 #[near]
 impl EmailDkimVerifier {
+    /// Migrate contract state from older versions (adds project-based Outlayer config).
+    ///
+    /// Run once after deploying new code with `without-init-call`.
+    #[init(ignore_state)]
+    pub fn migrate() -> Self {
+        if let Some(current) = env::state_read::<Self>() {
+            return current;
+        }
+
+        #[derive(BorshDeserialize, BorshSerialize)]
+        struct EmailDkimVerifierV0 {
+            outlayer_encryption_public_key: String,
+            outlayer_worker_wasm_url: String,
+            outlayer_worker_wasm_hash: String,
+            outlayer_contract_id: AccountId,
+            secrets_owner_id: AccountId,
+            secrets_profile: String,
+        }
+
+        let old: EmailDkimVerifierV0 =
+            env::state_read().expect("No state to migrate; call new() for fresh deployments");
+
+        Self {
+            outlayer_encryption_public_key: old.outlayer_encryption_public_key,
+            outlayer_worker_wasm_url: old.outlayer_worker_wasm_url,
+            outlayer_worker_wasm_hash: old.outlayer_worker_wasm_hash,
+            outlayer_worker_project_id: String::new(),
+            outlayer_contract_id: old.outlayer_contract_id,
+            secrets_owner_id: old.secrets_owner_id,
+            secrets_project_id: String::new(),
+            secrets_profile: old.secrets_profile,
+        }
+    }
+
     #[init]
     pub fn new() -> Self {
         Self {
             outlayer_encryption_public_key: OUTLAYER_ENCRYPTION_PUBKEY.to_string(),
             outlayer_worker_wasm_url: String::new(),
             outlayer_worker_wasm_hash: String::new(),
+            outlayer_worker_project_id: String::new(),
             outlayer_contract_id: "outlayer.near".parse().expect("Invalid Outlayer account ID"),
             // Account which set the secrets in https://outlayer.fastnear.com/secrets
             secrets_owner_id: "email-dkim-verifier-v1.near".parse().expect("Invalid secrets owner account ID"),
+            secrets_project_id: String::new(),
             secrets_profile: "main".to_string(),
         }
     }
@@ -219,12 +262,20 @@ impl EmailDkimVerifier {
         }
     }
 
+    pub fn get_outlayer_worker_project_id(&self) -> String {
+        self.outlayer_worker_project_id.clone()
+    }
+
     pub fn get_outlayer_contract_id(&self) -> AccountId {
         self.outlayer_contract_id.clone()
     }
 
     pub fn get_secrets_owner_id(&self) -> AccountId {
         self.secrets_owner_id.clone()
+    }
+
+    pub fn get_secrets_project_id(&self) -> String {
+        self.secrets_project_id.clone()
     }
 
     pub fn get_secrets_profile(&self) -> String {
@@ -251,6 +302,29 @@ impl EmailDkimVerifier {
         );
 
         self.secrets_owner_id = secrets_owner_id;
+    }
+
+    #[payable]
+    pub fn set_secrets_project_id(&mut self, secrets_project_id: String) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            env::current_account_id(),
+            "Only the contract owner can set the secrets project ID"
+        );
+        self.secrets_project_id = secrets_project_id.trim().to_string();
+    }
+
+    /// Set Outlayer worker source to a Project (recommended).
+    ///
+    /// Pass an empty string to clear and fall back to WasmUrl/GitHub.
+    #[payable]
+    pub fn set_outlayer_worker_project_id(&mut self, project_id: String) {
+        assert_eq!(
+            env::predecessor_account_id(),
+            env::current_account_id(),
+            "Only the contract owner can set the Outlayer worker project ID"
+        );
+        self.outlayer_worker_project_id = project_id.trim().to_string();
     }
 
     #[payable]
@@ -297,28 +371,7 @@ impl EmailDkimVerifier {
         assert!(attached >= MIN_DEPOSIT,
             "Attach at least 0.01 NEAR for Outlayer execution");
 
-        let worker_wasm_source = self.resolve_outlayer_worker_wasm_source();
-        let source = if !worker_wasm_source.url.is_empty() && !worker_wasm_source.hash.is_empty() {
-            serde_json::json!({
-                "WasmUrl": {
-                    "url": worker_wasm_source.url,
-                    "hash": worker_wasm_source.hash,
-                    "build_target": "wasm32-wasip2",
-                }
-            })
-        } else if worker_wasm_source.url.is_empty() && worker_wasm_source.hash.is_empty() {
-            serde_json::json!({
-                "GitHub": {
-                    "repo": "https://github.com/web3-authn/email-dkim-verifier-contract",
-                    "commit": "main",
-                    "build_target": "wasm32-wasip2",
-                }
-            })
-        } else {
-            env::panic_str(
-                "Outlayer worker wasm source is partially configured; set both url + hash or leave both empty to use GitHub source",
-            );
-        };
+        let source = self.resolve_outlayer_source();
 
         let resource_limits = serde_json::json!({
             "max_instructions": 10_000_000_000u64,
@@ -331,10 +384,7 @@ impl EmailDkimVerifier {
             serde_json::json!({})
         ).to_json_string();
 
-        let secrets = SecretsReference {
-            profile: self.get_secrets_profile(),
-            account_id: self.get_secrets_owner_id(),
-        };
+        let secrets = self.resolve_secrets_reference();
 
         let params = ExecutionParams {
             force_rebuild: false,
@@ -402,6 +452,50 @@ impl EmailDkimVerifier {
         }
 
         OutlayerWorkerWasmSource { url, hash }
+    }
+
+    pub(crate) fn resolve_outlayer_source(&self) -> serde_json::Value {
+        let project_id = self.outlayer_worker_project_id.trim();
+        if !project_id.is_empty() {
+            return serde_json::json!({
+                "Project": {
+                    "project_id": project_id,
+                }
+            });
+        }
+
+        let worker_wasm_source = self.resolve_outlayer_worker_wasm_source();
+        if !worker_wasm_source.url.is_empty() && !worker_wasm_source.hash.is_empty() {
+            return serde_json::json!({
+                "WasmUrl": {
+                    "url": worker_wasm_source.url,
+                    "hash": worker_wasm_source.hash,
+                    "build_target": "wasm32-wasip2",
+                }
+            });
+        }
+        if worker_wasm_source.url.is_empty() && worker_wasm_source.hash.is_empty() {
+            return serde_json::json!({
+                "GitHub": {
+                    "repo": "https://github.com/web3-authn/email-dkim-verifier-contract",
+                    "commit": "main",
+                    "build_target": "wasm32-wasip2",
+                }
+            });
+        }
+
+        env::panic_str(
+            "Outlayer worker wasm source is partially configured; set project_id OR set both url+hash OR leave both empty to use GitHub source",
+        );
+    }
+
+    pub(crate) fn resolve_secrets_reference(&self) -> SecretsReference {
+        let profile = self.get_secrets_profile();
+        let project_id = self.secrets_project_id.trim();
+        if !project_id.is_empty() {
+            return SecretsReference::Project { profile, project_id: project_id.to_string() };
+        }
+        SecretsReference::Account { profile, account_id: self.get_secrets_owner_id() }
     }
 
     /// Unified entrypoint for requesting DKIM verification.

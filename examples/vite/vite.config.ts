@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { tatchiApp } from '@tatchi-xyz/sdk/plugins/vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 /**
  * Do NOT use optional chaining or dynamic access such as `import.meta?.env`
@@ -23,10 +24,25 @@ export default defineConfig(({ mode }) => {
       allowedHosts: ['example.localhost', 'wallet.example.localhost', 'pta-m4.local'],
     },
     plugins: [
+      nodePolyfills({
+        globals: { Buffer: true, global: true, process: true },
+        protocolImports: true,
+      }),
       react(),
       // Cross‑origin dev (serve): headers only. Build (emitHeaders=true): emit _headers
       // for COOP/COEP/CORP + Permissions‑Policy; wallet HTML gets strict CSP.
-      tatchiApp({ walletOrigin, enableDebugRoutes: true, emitHeaders: true }),
+      tatchiApp({
+        walletOrigin,
+        enableDebugRoutes: true,
+        emitHeaders: true
+      }),
     ],
+    define: {
+      'process.env': {},
+      global: 'globalThis',
+    },
+    optimizeDeps: {
+      include: ['buffer', 'process', 'util'],
+    },
   }
 })

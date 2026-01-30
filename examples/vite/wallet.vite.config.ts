@@ -10,6 +10,7 @@
 */
 import { defineConfig, loadEnv } from 'vite'
 import { tatchiWallet } from '@tatchi-xyz/sdk/plugins/vite'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
 // Dedicated wallet dev server. Serves /wallet-service and /sdk/* under the
 // wallet origin while the app dev server uses tatchiAppServer (headers only).
@@ -34,8 +35,19 @@ export default defineConfig(({ mode }) => {
       allowedHosts: ['wallet.example.localhost', 'pta-m4.local'],
     },
     plugins: [
+      nodePolyfills({
+        globals: { Buffer: true, global: true, process: true },
+        protocolImports: true,
+      }),
       tatchiWallet({ walletOrigin, walletServicePath, sdkBasePath, enableDebugRoutes: true, emitHeaders: true }),
     ],
+    define: {
+      'process.env': {},
+      global: 'globalThis',
+    },
+    optimizeDeps: {
+      include: ['buffer', 'process', 'util'],
+    },
     cacheDir: 'node_modules/.vite-wallet',
     // Use cacheDir to avoid lock contention with vite.config.ts (app-server).
   }

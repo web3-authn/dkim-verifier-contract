@@ -9,9 +9,8 @@ Local demo app for registering/logging in with Passkeys and testing the email-ba
 
 ### Setup
 
-1. Configure env:
-   - `cp env.example .env`
-   - Edit `.env` as needed (contracts, relayer, wallet origin).
+1. Configure:
+   - Defaults are hardcoded in `examples/vite/src/config/tatchiConfig.ts` and selected via the in-app network toggle (testnet/mainnet).
 2. Install deps:
    - `pnpm install`
 
@@ -31,3 +30,12 @@ Command:
 - To show explorer links in the UI, set:
   - `VITE_EMAIL_RECOVERER_CONTRACT_ID`
   - `VITE_DKIM_VERIFIER_CONTRACT_ID`
+
+### Network modes
+
+- Use the toggle in the top-right to switch between:
+  - **Testnet**: Passkey register/login flow (Tatchi SDK) + Steps 1–5.
+  - **Mainnet**:
+    - Passkey register/login flow (Tatchi SDK) + Steps 1–5.
+
+Design notes live in `docs/`.

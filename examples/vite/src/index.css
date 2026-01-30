@@ -414,6 +414,37 @@ button {
   font-size: 1rem;
 }
 
+.button-secondary {
+  background: transparent;
+  color: var(--w3a-colors-primary);
+  border: 2px solid var(--w3a-colors-primary);
+}
+
+.button-secondary:hover:not(:disabled) {
+  border-color: var(--w3a-colors-primaryHover);
+  color: var(--w3a-colors-primaryHover);
+}
+
+.icon-button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--w3a-colors-surface2);
+  color: var(--w3a-colors-textSecondary);
+  border: 1px solid var(--w3a-colors-borderSecondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.icon-button:hover:not(:disabled) {
+  border-color: var(--w3a-colors-borderHover);
+  color: var(--w3a-colors-textPrimary);
+}
+
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -546,6 +577,40 @@ button:disabled {
   top: 16px;
   right: 16px;
   z-index: 1000;
+}
+
+.network-toggle {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: oklch(0.74 0.166 170 / 0.14);
+  border: 1px solid oklch(0.74 0.166 170 / 0.35);
+  overflow: hidden;
+}
+
+.network-toggle button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  box-shadow: none;
+}
+
+.network-toggle button[aria-pressed="true"] {
+  background: var(--w3a-colors-primary);
+  color: var(--w3a-colors-textButton);
+}
+
+.network-toggle button:hover {
+  box-shadow: none;
+}
+
+.network-toggle button:focus-visible {
+  outline: 2px solid var(--w3a-colors-focus);
+  outline-offset: -2px;
 }
 
 @keyframes spin {

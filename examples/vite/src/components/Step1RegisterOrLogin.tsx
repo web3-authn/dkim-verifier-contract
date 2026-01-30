@@ -160,8 +160,8 @@ export function Step1RegisterOrLogin({
         <h3>01 {title}</h3>
         <p className="helper">
           {mode === "login"
-            ? "Login to your existing testnet NEAR account with a passkey."
-            : "Create a testnet NEAR account with a passkey."}
+            ? "Login to your NEAR account with a passkey."
+            : "Create a NEAR account with a passkey."}
         </p>
       </aside>
       <section className={`panel ${isBlocked ? "is-disabled" : ""}`}>

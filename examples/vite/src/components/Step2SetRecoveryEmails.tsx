@@ -163,10 +163,7 @@ export function Step2SetRecoveryEmails({ targetAccountId }: Step2SetRecoveryEmai
             {isLoading && <span className="spinner" aria-hidden="true" />}
             {isLoading ? "Submitting..." : "Save Recovery Email"}
           </button>
-          {
-            loginState.nearAccountId &&
-            <p className="helper pad-left-05">Logged in as {loginState.nearAccountId}.</p>
-            }
+          {loginState.nearAccountId && <p className="helper pad-left-05">Logged in as {loginState.nearAccountId}.</p>}
         </form>
         {isBlocked && <p className="helper">Login required to set recovery email.</p>}
         <Output state={log.output} />

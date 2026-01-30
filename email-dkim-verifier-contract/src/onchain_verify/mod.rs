@@ -3,7 +3,6 @@ use crate::{
     EmailDkimVerifier, OutlayerInputArgs, VerificationResult,
     OutlayerWorkerResponse, MIN_DEPOSIT,
     GET_DNS_RECORDS_METHOD,
-    SecretsReference,
 };
 pub mod parsers;
 pub mod dkim;
@@ -62,28 +61,7 @@ pub fn request_email_verification_onchain_inner(
     );
     let input_payload = input_args.to_json_string();
 
-    let worker_wasm_source = contract.resolve_outlayer_worker_wasm_source();
-    let source = if !worker_wasm_source.url.is_empty() && !worker_wasm_source.hash.is_empty() {
-        json!({
-            "WasmUrl": {
-                "url": worker_wasm_source.url,
-                "hash": worker_wasm_source.hash,
-                "build_target": "wasm32-wasip2"
-            }
-        })
-    } else if worker_wasm_source.url.is_empty() && worker_wasm_source.hash.is_empty() {
-        json!({
-            "GitHub": {
-                "repo": "https://github.com/web3-authn/email-dkim-verifier-contract",
-                "commit": "main",
-                "build_target": "wasm32-wasip2"
-            }
-        })
-    } else {
-        env::panic_str(
-            "Outlayer worker wasm source is partially configured; set both url + hash or leave both empty to use GitHub source",
-        );
-    };
+    let source = contract.resolve_outlayer_source();
 
     let resource_limits = json!({
         "max_instructions": 10_000_000_000u64,
@@ -91,10 +69,7 @@ pub fn request_email_verification_onchain_inner(
         "max_execution_seconds": 60u64
     });
 
-    let secrets = SecretsReference {
-        profile: contract.get_secrets_profile(),
-        account_id: contract.get_secrets_owner_id(),
-    };
+    let secrets = contract.resolve_secrets_reference();
 
     ext_outlayer::ext(contract.get_outlayer_contract_id())
         .with_attached_deposit(NearToken::from_yoctonear(outlayer_deposit))

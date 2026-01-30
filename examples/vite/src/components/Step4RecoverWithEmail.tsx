@@ -14,6 +14,8 @@ import { getNearAccountExplorerUrl, getNearExplorerBaseUrl } from "../utils/near
 type Step4RecoverWithEmailProps = {
   targetAccountId: string;
   lastAccountId: string;
+  forceAccountIdToRecover?: string;
+  allowWithoutLastAccountId?: boolean;
 };
 
 function getRequestIdFromMailtoUrl(mailtoUrl: string) {
@@ -29,6 +31,8 @@ function getRequestIdFromMailtoUrl(mailtoUrl: string) {
 export function Step4RecoverWithEmail({
   targetAccountId,
   lastAccountId,
+  forceAccountIdToRecover,
+  allowWithoutLastAccountId,
 }: Step4RecoverWithEmailProps) {
   const { tatchi, loginState, getLoginSession, loginAndCreateSession, refreshLoginState } = useTatchi();
   const [isLoading, setIsLoading] = useState(false);
@@ -116,8 +120,8 @@ export function Step4RecoverWithEmail({
     }
   };
 
-  const accountIdToRecover = targetAccountId || lastAccountId;
-  const canAttemptRecovery = !loginState.isLoggedIn && Boolean(lastAccountId);
+  const accountIdToRecover = forceAccountIdToRecover || targetAccountId || lastAccountId;
+  const canAttemptRecovery = !loginState.isLoggedIn && (allowWithoutLastAccountId ? Boolean(accountIdToRecover) : Boolean(lastAccountId));
   const isBlocked = !canAttemptRecovery;
   const isDisabled = isBlocked || isLoading || isCheckingRecoveryEmails || hasRecoveryEmailSet === false;
 
@@ -161,7 +165,7 @@ export function Step4RecoverWithEmail({
       log.setOutputText("error", "Logout before starting recovery.");
       return;
     }
-    if (!lastAccountId) {
+    if (!allowWithoutLastAccountId && !lastAccountId) {
       log.setOutputText("error", "Recovery is available only after a prior login is stored locally.");
       return;
     }
