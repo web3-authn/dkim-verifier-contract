@@ -31,6 +31,28 @@ Used for email-based account recovery for tatchi.xyz accounts; other contracts c
   just upgrade
   ```
 
+## Recommended `just` command sequence
+
+For a fresh deploy to a new `CONTRACT_ID` (typical testnet setup):
+
+```bash
+cp env.example .env
+# edit .env
+
+just deploy-dev
+just set-outlayer-contract
+
+# Recommended: Project-based source + secrets
+just set-outlayer-worker-project
+just set-secrets-project
+
+just set-outlayer-keys
+```
+
+Notes:
+- If `OUTLAYER_WORKER_PROJECT_ID` is set (Project mode), Outlayer will execute the project’s **active version**. Updating `outlayer_worker_wasm_url/hash` on the contract via `just set-outlayer-wasm` won’t affect execution until the Outlayer project version is updated.
+- If you want standalone `WasmUrl` mode instead, clear the project ID on-chain (set it to an empty string) and use `just set-outlayer-wasm`.
+
 ## Deploy / upgrade flow (main)
 
 After pushing a change to `main`:
@@ -41,9 +63,26 @@ After pushing a change to `main`:
    just upgrade  # existing contract
    # or: just deploy  # new contract
    ```
-3. Point the contract at the latest worker build:
+3. Set the Outlayer contract ID for your network:
+   ```bash
+   just set-outlayer-contract
+   ```
+4. Point the contract at the latest worker build:
    ```bash
    just set-outlayer-wasm
+   ```
+5. (Recommended) Configure the worker **source** to use an Outlayer Project:
+   ```bash
+   just set-outlayer-worker-project
+   ```
+   This uses `OUTLAYER_WORKER_PROJECT_ID` from `.env` (e.g. `w3a-v1.testnet/tatchi-xyz-email-recovery`).
+6. (Recommended) Configure secrets to use an Outlayer Project:
+   ```bash
+   just set-secrets-project
+   ```
+7. Refresh the contract’s stored worker public key:
+   ```bash
+   just set-outlayer-keys
    ```
 
 ## Outlayer worker WASM publishing (R2)
@@ -78,7 +117,9 @@ For local testing (outside Outlayer), the worker also accepts `OUTLAYER_WORKER_S
 ### Create / rotate the protected secret + refresh contract public key
 
 1. In the Outlayer [Secrets Management](https://outlayer.fastnear.com/secrets) page, create a protected secret `PROTECTED_OUTLAYER_WORKER_SK_SEED_HEX32` with type **"Hex 32 bytes (64 chars)"**. Outlayer will generate the value for you.
-  - Important: secrets are scoped to the worker *code source*. If you’re using `WasmUrl` builds (this repo), you must create the secret under the **WasmHash** scope for the current worker WASM hash; this is separate from the **GitHub Repository** secrets scope.
+  - Important: secrets are scoped to the worker *code source*:
+    - If you run `just set-outlayer-worker-project` (Project source), create the secret under that **Project**.
+    - If you use `WasmUrl` source (URL+hash), create the secret under the **WasmHash** scope for the current worker WASM hash.
   - leave `Branch` empty
   - set `profile` to `main` (or whatever is set in `lib.rs`: `SECRETS_PROFILE = "main"`)
 2. Restart/redeploy the worker so it picks up the updated secret.
