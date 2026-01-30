@@ -41,6 +41,7 @@ cp env.example .env
 
 just deploy-dev
 just set-outlayer-contract
+just set-secrets-owner
 
 # Recommended: Project-based source + secrets
 just set-outlayer-worker-project
@@ -67,20 +68,24 @@ After pushing a change to `main`:
    ```bash
    just set-outlayer-contract
    ```
-4. Point the contract at the latest worker build:
+4. Set which account “owns” the Outlayer secrets for this app:
+   ```bash
+   just set-secrets-owner
+   ```
+5. Point the contract at the latest worker build:
    ```bash
    just set-outlayer-wasm
    ```
-5. (Recommended) Configure the worker **source** to use an Outlayer Project:
+6. (Recommended) Configure the worker **source** to use an Outlayer Project:
    ```bash
    just set-outlayer-worker-project
    ```
    This uses `OUTLAYER_WORKER_PROJECT_ID` from `.env` (e.g. `w3a-v1.testnet/tatchi-xyz-email-recovery`).
-6. (Recommended) Configure secrets to use an Outlayer Project:
+7. (Recommended) Configure secrets to use an Outlayer Project:
    ```bash
    just set-secrets-project
    ```
-7. Refresh the contract’s stored worker public key:
+8. Refresh the contract’s stored worker public key:
    ```bash
    just set-outlayer-keys
    ```

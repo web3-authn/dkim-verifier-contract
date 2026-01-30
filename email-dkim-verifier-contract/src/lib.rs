@@ -80,10 +80,9 @@ pub struct OutlayerWorkerWasmSource {
 
 #[derive(near_sdk::serde::Serialize, near_sdk::serde::Deserialize)]
 #[serde(crate = "near_sdk::serde")]
-#[serde(untagged)]
-enum SecretsReference {
-    Account { profile: String, account_id: AccountId },
-    Project { profile: String, project_id: String },
+struct SecretsReference {
+    profile: String,
+    account_id: AccountId,
 }
 
 #[derive(near_sdk::serde::Serialize, near_sdk::serde::Deserialize)]
@@ -457,11 +456,10 @@ impl EmailDkimVerifier {
 
     pub(crate) fn resolve_secrets_reference(&self) -> SecretsReference {
         let profile = self.get_secrets_profile();
-        let project_id = self.secrets_project_id.trim();
-        if !project_id.is_empty() {
-            return SecretsReference::Project { profile, project_id: project_id.to_string() };
+        SecretsReference {
+            profile,
+            account_id: self.get_secrets_owner_id(),
         }
-        SecretsReference::Account { profile, account_id: self.get_secrets_owner_id() }
     }
 
     /// Unified entrypoint for requesting DKIM verification.
@@ -572,6 +570,36 @@ impl EmailDkimVerifier {
         #[callback_result] result: Result<Option<serde_json::Value>, PromiseError>,
     ) -> VerificationResult {
         tee_verify::on_email_verification_private_result(requested_by, request_id, result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use near_sdk::test_utils::VMContextBuilder;
+    use near_sdk::testing_env;
+
+    #[test]
+    fn secrets_ref_serializes_with_account_id_even_when_project_id_is_set() {
+        let mut ctx = VMContextBuilder::new();
+        ctx.predecessor_account_id("contract.testnet".parse().unwrap())
+            .current_account_id("contract.testnet".parse().unwrap())
+            .attached_deposit(near_sdk::NearToken::from_yoctonear(1));
+        testing_env!(ctx.build());
+
+        let mut contract = EmailDkimVerifier::new();
+        contract.set_secrets_owner_id("w3a-v1.testnet".parse().unwrap());
+        contract.set_secrets_project_id("w3a-v1.testnet/tatchi-xyz-email-recovery".to_string());
+
+        let secrets_ref = contract.resolve_secrets_reference();
+        let val = near_sdk::serde_json::to_value(&secrets_ref).expect("secrets_ref to JSON");
+
+        assert_eq!(val.get("profile").and_then(|v| v.as_str()), Some("main"));
+        assert_eq!(
+            val.get("account_id").and_then(|v| v.as_str()),
+            Some("w3a-v1.testnet")
+        );
+        assert!(val.get("project_id").is_none());
     }
 }
 
