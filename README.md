@@ -43,16 +43,13 @@ just deploy-dev
 just set-outlayer-contract
 just set-secrets-owner
 
-# Recommended: Project-based source + secrets
-just set-outlayer-worker-project
-just set-secrets-project
+just set-outlayer-wasm
 
 just set-outlayer-keys
 ```
 
 Notes:
-- If `OUTLAYER_WORKER_PROJECT_ID` is set (Project mode), Outlayer will execute the project’s **active version**. Updating `outlayer_worker_wasm_url/hash` on the contract via `just set-outlayer-wasm` won’t affect execution until the Outlayer project version is updated.
-- If you want standalone `WasmUrl` mode instead, clear the project ID on-chain (set it to an empty string) and use `just set-outlayer-wasm`.
+- In WasmUrl mode, create `PROTECTED_OUTLAYER_WORKER_SK_SEED_HEX32` under the **WasmHash** secrets scope for the worker hash you’re using (owner = `SECRETS_OWNER_ID`, profile = `main`).
 
 ## Deploy / upgrade flow (main)
 
@@ -76,16 +73,7 @@ After pushing a change to `main`:
    ```bash
    just set-outlayer-wasm
    ```
-6. (Recommended) Configure the worker **source** to use an Outlayer Project:
-   ```bash
-   just set-outlayer-worker-project
-   ```
-   This uses `OUTLAYER_WORKER_PROJECT_ID` from `.env` (e.g. `w3a-v1.testnet/tatchi-xyz-email-recovery`).
-7. (Recommended) Configure secrets to use an Outlayer Project:
-   ```bash
-   just set-secrets-project
-   ```
-8. Refresh the contract’s stored worker public key:
+6. Refresh the contract’s stored worker public key:
    ```bash
    just set-outlayer-keys
    ```
@@ -123,7 +111,6 @@ For local testing (outside Outlayer), the worker also accepts `OUTLAYER_WORKER_S
 
 1. In the Outlayer [Secrets Management](https://outlayer.fastnear.com/secrets) page, create a protected secret `PROTECTED_OUTLAYER_WORKER_SK_SEED_HEX32` with type **"Hex 32 bytes (64 chars)"**. Outlayer will generate the value for you.
   - Important: secrets are scoped to the worker *code source*:
-    - If you run `just set-outlayer-worker-project` (Project source), create the secret under that **Project**.
     - If you use `WasmUrl` source (URL+hash), create the secret under the **WasmHash** scope for the current worker WASM hash.
   - leave `Branch` empty
   - set `profile` to `main` (or whatever is set in `lib.rs`: `SECRETS_PROFILE = "main"`)

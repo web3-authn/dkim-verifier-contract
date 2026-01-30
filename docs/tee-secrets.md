@@ -47,18 +47,13 @@ Typical flow:
 
 This keeps the contract simple and avoids on‑chain key derivation.
 
-## Project-based secrets binding (recommended)
+## Secrets binding (WasmUrl)
 
-Outlayer supports binding protected secrets to a **Project ID** (so secrets persist across code updates).
+This repo uses the standard Outlayer `secrets_ref: { profile, account_id }` shape.
 
-- Example project ID:
-  - `w3a-v1.near/tatchi-xyz-email-recovery`
-- Configure the contract to use project-bound secrets:
-  - `scripts/set_secrets_project_id.sh` (sets `secrets_ref: { profile, project_id }` on Outlayer calls)
-- Optionally, also configure the worker source to use a Project:
-  - `scripts/set_outlayer_worker_project_id.sh` (sets `source: { Project: { project_id } }`)
-
-If no project ID is set on-chain, the contract falls back to the legacy `{ profile, account_id }` secrets reference.
+When running workers via `WasmUrl` (URL + SHA256 hash), Outlayer secrets are scoped to the
+**WasmHash** accessor. Create `PROTECTED_OUTLAYER_WORKER_SK_SEED_HEX32` under the matching
+WasmHash + `profile` + `owner` (`account_id`) so the worker can read it at runtime.
 
 
 ## Key rotation

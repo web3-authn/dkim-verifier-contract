@@ -25,14 +25,8 @@ pub struct EmailDkimVerifier {
     outlayer_encryption_public_key: String,
     outlayer_worker_wasm_url: String,
     outlayer_worker_wasm_hash: String,
-    /// Optional Outlayer Project ID to use as the worker source, e.g. `alice.near/weather-api`.
-    /// When set (non-empty), Outlayer calls use `source: { Project: { project_id } }`.
-    outlayer_worker_project_id: String,
     outlayer_contract_id: AccountId,
     secrets_owner_id: AccountId,
-    /// Optional Outlayer Project ID to use for secrets binding, e.g. `alice.near/my-app`.
-    /// When set (non-empty), Outlayer calls use `secrets_ref: { profile, project_id }`.
-    secrets_project_id: String,
     secrets_profile: String,
 }
 
@@ -202,11 +196,9 @@ impl EmailDkimVerifier {
             outlayer_encryption_public_key: OUTLAYER_ENCRYPTION_PUBKEY.to_string(),
             outlayer_worker_wasm_url: String::new(),
             outlayer_worker_wasm_hash: String::new(),
-            outlayer_worker_project_id: String::new(),
             outlayer_contract_id: "outlayer.near".parse().expect("Invalid Outlayer account ID"),
             // Account which set the secrets in https://outlayer.fastnear.com/secrets
             secrets_owner_id: "email-dkim-verifier-v1.near".parse().expect("Invalid secrets owner account ID"),
-            secrets_project_id: String::new(),
             secrets_profile: "main".to_string(),
         }
     }
@@ -227,20 +219,12 @@ impl EmailDkimVerifier {
         }
     }
 
-    pub fn get_outlayer_worker_project_id(&self) -> String {
-        self.outlayer_worker_project_id.clone()
-    }
-
     pub fn get_outlayer_contract_id(&self) -> AccountId {
         self.outlayer_contract_id.clone()
     }
 
     pub fn get_secrets_owner_id(&self) -> AccountId {
         self.secrets_owner_id.clone()
-    }
-
-    pub fn get_secrets_project_id(&self) -> String {
-        self.secrets_project_id.clone()
     }
 
     pub fn get_secrets_profile(&self) -> String {
@@ -267,29 +251,6 @@ impl EmailDkimVerifier {
         );
 
         self.secrets_owner_id = secrets_owner_id;
-    }
-
-    #[payable]
-    pub fn set_secrets_project_id(&mut self, secrets_project_id: String) {
-        assert_eq!(
-            env::predecessor_account_id(),
-            env::current_account_id(),
-            "Only the contract owner can set the secrets project ID"
-        );
-        self.secrets_project_id = secrets_project_id.trim().to_string();
-    }
-
-    /// Set Outlayer worker source to a Project (recommended).
-    ///
-    /// Pass an empty string to clear and fall back to WasmUrl/GitHub.
-    #[payable]
-    pub fn set_outlayer_worker_project_id(&mut self, project_id: String) {
-        assert_eq!(
-            env::predecessor_account_id(),
-            env::current_account_id(),
-            "Only the contract owner can set the Outlayer worker project ID"
-        );
-        self.outlayer_worker_project_id = project_id.trim().to_string();
     }
 
     #[payable]
@@ -420,15 +381,6 @@ impl EmailDkimVerifier {
     }
 
     pub(crate) fn resolve_outlayer_source(&self) -> serde_json::Value {
-        let project_id = self.outlayer_worker_project_id.trim();
-        if !project_id.is_empty() {
-            return serde_json::json!({
-                "Project": {
-                    "project_id": project_id,
-                }
-            });
-        }
-
         let worker_wasm_source = self.resolve_outlayer_worker_wasm_source();
         if !worker_wasm_source.url.is_empty() && !worker_wasm_source.hash.is_empty() {
             return serde_json::json!({
@@ -450,7 +402,7 @@ impl EmailDkimVerifier {
         }
 
         env::panic_str(
-            "Outlayer worker wasm source is partially configured; set project_id OR set both url+hash OR leave both empty to use GitHub source",
+            "Outlayer worker wasm source is partially configured; set both url+hash OR leave both empty to use GitHub source",
         );
     }
 
@@ -589,7 +541,6 @@ mod tests {
 
         let mut contract = EmailDkimVerifier::new();
         contract.set_secrets_owner_id("w3a-v1.testnet".parse().unwrap());
-        contract.set_secrets_project_id("w3a-v1.testnet/tatchi-xyz-email-recovery".to_string());
 
         let secrets_ref = contract.resolve_secrets_reference();
         let val = near_sdk::serde_json::to_value(&secrets_ref).expect("secrets_ref to JSON");
@@ -599,7 +550,6 @@ mod tests {
             val.get("account_id").and_then(|v| v.as_str()),
             Some("w3a-v1.testnet")
         );
-        assert!(val.get("project_id").is_none());
     }
 }
 
