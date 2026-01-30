@@ -197,40 +197,6 @@ impl OutlayerInputArgs {
 
 #[near]
 impl EmailDkimVerifier {
-    /// Migrate contract state from older versions (adds project-based Outlayer config).
-    ///
-    /// Run once after deploying new code with `without-init-call`.
-    #[init(ignore_state)]
-    pub fn migrate() -> Self {
-        if let Some(current) = env::state_read::<Self>() {
-            return current;
-        }
-
-        #[derive(BorshDeserialize, BorshSerialize)]
-        struct EmailDkimVerifierV0 {
-            outlayer_encryption_public_key: String,
-            outlayer_worker_wasm_url: String,
-            outlayer_worker_wasm_hash: String,
-            outlayer_contract_id: AccountId,
-            secrets_owner_id: AccountId,
-            secrets_profile: String,
-        }
-
-        let old: EmailDkimVerifierV0 =
-            env::state_read().expect("No state to migrate; call new() for fresh deployments");
-
-        Self {
-            outlayer_encryption_public_key: old.outlayer_encryption_public_key,
-            outlayer_worker_wasm_url: old.outlayer_worker_wasm_url,
-            outlayer_worker_wasm_hash: old.outlayer_worker_wasm_hash,
-            outlayer_worker_project_id: String::new(),
-            outlayer_contract_id: old.outlayer_contract_id,
-            secrets_owner_id: old.secrets_owner_id,
-            secrets_project_id: String::new(),
-            secrets_profile: old.secrets_profile,
-        }
-    }
-
     #[init]
     pub fn new() -> Self {
         Self {
