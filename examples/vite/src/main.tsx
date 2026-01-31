@@ -14,6 +14,7 @@ import { buildTatchiConfig } from "./config/tatchiConfig";
 import "./index.css";
 
 const appRoot = document.getElementById("app-root");
+if (!appRoot) throw new Error('Missing root element: #app-root');
 
 type ThemeMode = "light" | "dark";
 
@@ -34,7 +35,7 @@ function App() {
 
   return (
     <NetworkModeProvider value={{ networkMode, setNetworkMode }}>
-      <TatchiPasskeyProvider key={networkMode} config={config} theme={{ theme, setTheme }}>
+      <TatchiPasskeyProvider config={config} theme={{ theme, setTheme }}>
         <Toaster richColors closeButton />
         <ProfileMenuControlProvider>
           <HomePage />

@@ -1,19 +1,16 @@
-import { fileURLToPath } from 'node:url'
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { tatchiApp } from '@tatchi-xyz/sdk/plugins/vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 
-/**
- * Do NOT use optional chaining or dynamic access such as `import.meta?.env`
- * or `import.meta["env"]`. Those patterns prevent Vite's static analysis
- * and will yield `undefined` at runtime without errors.
- * See: https://vite.dev/guide/env-and-mode
- */
 
 export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '')
-  const walletOrigin = env.VITE_WALLET_ORIGIN || 'https://wallet.web3authn.org'
+  // If you ship a single build with a testnet/mainnet toggle, the host page must delegate
+  // WebAuthn + clipboard to BOTH wallet origins (Permissions-Policy).
+  const walletOrigins = [
+    'https://wallet-staging.web3authn.org',
+    'https://wallet-mainnet.web3authn.org',
+  ];
   return {
     clearScreen: false,
     logLevel: 'info',
@@ -32,9 +29,10 @@ export default defineConfig(({ mode }) => {
       // Cross‑origin dev (serve): headers only. Build (emitHeaders=true): emit _headers
       // for COOP/COEP/CORP + Permissions‑Policy; wallet HTML gets strict CSP.
       tatchiApp({
-        walletOrigin,
+        walletOrigins,
         enableDebugRoutes: true,
-        emitHeaders: true
+        // Needed if you ship a single build with a testnet/mainnet toggle.
+        emitHeaders: true,
       }),
     ],
     define: {

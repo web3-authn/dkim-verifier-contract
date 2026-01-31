@@ -577,6 +577,21 @@ button:disabled {
   top: 16px;
   right: 16px;
   z-index: 1000;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.top-center {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+}
+
+.top-right-menu {
+  position: relative;
 }
 
 .network-toggle {
@@ -633,6 +648,10 @@ button:disabled {
   .top-right {
     top: 12px;
     right: 12px;
+  }
+
+  .top-center {
+    top: 12px;
   }
 
   .row {

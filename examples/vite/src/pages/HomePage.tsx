@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAccountInput, useTatchi } from "@tatchi-xyz/sdk/react";
+import { useTatchi } from "@tatchi-xyz/sdk/react";
 import { Layout } from "../components/Layout";
 import { NetworkToggle } from "../components/NetworkToggle";
 import { Step1RegisterOrLogin } from "../components/Step1RegisterOrLogin";
@@ -9,10 +9,7 @@ import { Step4RecoverWithEmail } from "../components/Step4RecoverWithEmail";
 import { Step5TestTransfer } from "../components/Step5TestTransfer";
 import { TatchiProfileSettingsButton } from "../components/TatchiProfileSettingsButton";
 import { useNetworkMode } from "../contexts/NetworkMode";
-
-const env = import.meta.env;
-
-const DEFAULT_ACCOUNT_ID = env.VITE_EXAMPLE_ACCOUNT_ID || "";
+import { useAccountInputForContract } from "../hooks/useAccountInputForContract";
 
 function HomePagePasskey() {
   const { loginState, tatchi } = useTatchi();
@@ -26,17 +23,12 @@ function HomePagePasskey() {
     lastLoggedInDomain,
     isUsingExistingAccount,
     accountExists,
-  } = useAccountInput({
+  } = useAccountInputForContract({
     tatchi,
     contractId: tatchi.configs.contractId,
     currentNearAccountId: loginState.nearAccountId,
     isLoggedIn: loginState.isLoggedIn,
   });
-
-  useEffect(() => {
-    if (!DEFAULT_ACCOUNT_ID || inputUsername) return;
-    setInputUsername(DEFAULT_ACCOUNT_ID.split(".")[0] ?? "");
-  }, [DEFAULT_ACCOUNT_ID, inputUsername, setInputUsername]);
 
   const postfix = displayPostfix || `.${tatchi.configs.contractId}`;
   const shouldLogin = isUsingExistingAccount || accountExists;
@@ -73,9 +65,13 @@ export function HomePage() {
 
   return (
     <Layout>
-      <div className="top-right" style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <TatchiProfileSettingsButton />
+      <div className="top-center">
         <NetworkToggle />
+      </div>
+      <div className="top-right">
+        <div className="top-right-menu">
+          <TatchiProfileSettingsButton />
+        </div>
       </div>
       <header className="hero">
         <div>

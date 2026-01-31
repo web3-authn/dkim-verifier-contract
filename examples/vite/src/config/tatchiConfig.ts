@@ -27,7 +27,7 @@ const DEFAULTS_BY_NETWORK: Record<
     walletOrigin: "https://wallet-staging.web3authn.org",
     webauthnContractId: "w3a-v1.testnet",
     emailRecovererContractId: "w3a-email-recoverer-v1.testnet",
-    dkimVerifierContractId: "email-dkim-verifier-v1.testnet",
+    dkimVerifierContractId: "w3a-email-dkim-verifier-v1.testnet",
     zkEmailVerifierContractId: "zk-email-verifier-v1.testnet",
   },
   mainnet: {
@@ -40,7 +40,7 @@ const DEFAULTS_BY_NETWORK: Record<
     walletOrigin: "https://wallet-mainnet.web3authn.org",
     webauthnContractId: "w3a-v1.near",
     emailRecovererContractId: "email-recoverer-v1.near",
-    dkimVerifierContractId: "email-dkim-verifier-v2.near",
+    dkimVerifierContractId: "w3a-email-dkim-verifier-v1.near",
     zkEmailVerifierContractId: "zk-email-verifier-v1.near",
   },
 };
@@ -71,4 +71,3 @@ export function buildTatchiConfig(networkMode: NetworkMode): TatchiConfigsInput 
     },
   };
 }
-

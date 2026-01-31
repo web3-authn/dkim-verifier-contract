@@ -30,6 +30,7 @@ Command:
 - To show explorer links in the UI, set:
   - `VITE_EMAIL_RECOVERER_CONTRACT_ID`
   - `VITE_DKIM_VERIFIER_CONTRACT_ID`
+- Production deployments must send a `Permissions-Policy` header that delegates WebAuthn (`publickey-credentials-create/get`) to the wallet iframe origin(s). The SDK Vite plugin emits a Cloudflare Pages/Netlify-compatible `dist/_headers` at build time via `tatchiApp({ emitHeaders: true, walletOrigins: [...] })` (needed if you ship a single build with a testnet/mainnet toggle).
 
 ### Network modes
 

@@ -7,9 +7,20 @@ export function NetworkToggle() {
 
   const setMode = useCallback(
     (mode: NetworkMode) => {
+      if (mode === networkMode) return;
+
       setNetworkMode(mode);
+      // The SDK's TatchiPasskey manager is intentionally treated as a singleton and ignores
+      // config changes after initialization. Switching between testnet/mainnet therefore
+      // requires a full reload to re-initialize the SDK with the new config.
+      try {
+        window.localStorage.setItem("w3a:network-mode", JSON.stringify(mode));
+      } catch {
+        // ignore (private mode, sandboxed iframe, etc.)
+      }
+      window.location.reload();
     },
-    [setNetworkMode],
+    [networkMode, setNetworkMode],
   );
 
   return (
@@ -23,4 +34,3 @@ export function NetworkToggle() {
     </div>
   );
 }
-
