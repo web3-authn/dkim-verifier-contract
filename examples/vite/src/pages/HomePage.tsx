@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useTatchi } from "@tatchi-xyz/sdk/react";
 import { Layout } from "../components/Layout";
 import { NetworkToggle } from "../components/NetworkToggle";
@@ -19,8 +18,7 @@ function HomePagePasskey() {
     displayPostfix,
     targetAccountId,
     setInputUsername,
-    lastLoggedInUsername,
-    lastLoggedInDomain,
+    lastAccountId,
     isUsingExistingAccount,
     accountExists,
   } = useAccountInputForContract({
@@ -32,8 +30,6 @@ function HomePagePasskey() {
 
   const postfix = displayPostfix || `.${tatchi.configs.contractId}`;
   const shouldLogin = isUsingExistingAccount || accountExists;
-  const lastAccountId =
-    lastLoggedInUsername && lastLoggedInDomain ? `${lastLoggedInUsername}${lastLoggedInDomain}` : "";
 
   return (
     <div className="rows">

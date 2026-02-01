@@ -58,6 +58,10 @@ export function buildTatchiConfig(networkMode: NetworkMode): TatchiConfigsInput 
         mailtoAddress: defaults.recoverEmailRecipient,
       },
     },
+    signerMode: {
+      mode: "threshold-signer",
+      behavior: "fallback",
+    },
     emailRecoveryContracts: {
       emailRecovererGlobalContract: defaults.emailRecovererContractId,
       emailDkimVerifierContract: defaults.dkimVerifierContractId,

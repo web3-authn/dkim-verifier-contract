@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocalStorageState } from "./useLocalStorageState";
 
 type RecentLogin = {
   nearAccountId: string;
@@ -29,6 +30,7 @@ export type AccountInputState = {
   inputUsername: string;
   lastLoggedInUsername: string;
   lastLoggedInDomain: string;
+  lastAccountId: string;
   targetAccountId: string;
   displayPostfix: string;
   isUsingExistingAccount: boolean;
@@ -62,6 +64,11 @@ export function useAccountInputForContract({
   const [displayPostfix, setDisplayPostfix] = useState("");
   const [isUsingExistingAccount, setIsUsingExistingAccount] = useState(false);
   const [accountExists, setAccountExists] = useState(false);
+  const [storedLastAccountId, setStoredLastAccountId] = useLocalStorageState<string>(
+    `w3a:last-account-id:${contractId}`,
+    "",
+  );
+  const hasAutoPrefilledInputRef = useRef(false);
 
   const contractSuffix = useMemo(() => (contractId ? `.${contractId}` : ""), [contractId]);
 
@@ -74,6 +81,7 @@ export function useAccountInputForContract({
 
       const lastUsed = res?.lastUsedAccount?.nearAccountId;
       if (lastUsed && matchesContract(lastUsed, contractId)) {
+        setStoredLastAccountId(lastUsed);
         const parts = splitAccountId(lastUsed);
         setLastLoggedInUsername(parts.username);
         setLastLoggedInDomain(parts.domain);
@@ -87,7 +95,7 @@ export function useAccountInputForContract({
       setLastLoggedInUsername("");
       setLastLoggedInDomain("");
     }
-  }, [contractId, tatchi]);
+  }, [contractId, setStoredLastAccountId, tatchi]);
 
   const checkAccountExists = useCallback(
     async (accountId: string) => {
@@ -113,8 +121,32 @@ export function useAccountInputForContract({
   useEffect(() => {
     if (!isLoggedIn || !currentNearAccountId) return;
     if (!matchesContract(currentNearAccountId, contractId)) return;
-    setInputUsernameState(splitAccountId(currentNearAccountId).username);
-  }, [contractId, currentNearAccountId, isLoggedIn]);
+    setStoredLastAccountId(currentNearAccountId);
+    const parts = splitAccountId(currentNearAccountId);
+    setLastLoggedInUsername(parts.username);
+    setLastLoggedInDomain(parts.domain);
+    setInputUsernameState(parts.username);
+  }, [contractId, currentNearAccountId, isLoggedIn, setStoredLastAccountId]);
+
+  useEffect(() => {
+    hasAutoPrefilledInputRef.current = false;
+  }, [contractId]);
+
+  useEffect(() => {
+    if (isLoggedIn) return;
+    if (hasAutoPrefilledInputRef.current) return;
+    if (inputUsername) return;
+
+    if (!storedLastAccountId || !matchesContract(storedLastAccountId, contractId)) return;
+    setInputUsernameState(splitAccountId(storedLastAccountId).username);
+    hasAutoPrefilledInputRef.current = true;
+  }, [contractId, inputUsername, isLoggedIn, storedLastAccountId]);
+
+  const lastAccountId = useMemo(() => {
+    if (storedLastAccountId && matchesContract(storedLastAccountId, contractId)) return storedLastAccountId;
+    if (lastLoggedInUsername && lastLoggedInDomain) return `${lastLoggedInUsername}${lastLoggedInDomain}`;
+    return "";
+  }, [contractId, lastLoggedInDomain, lastLoggedInUsername, storedLastAccountId]);
 
   useEffect(() => {
     const uname = normalizeUsername(inputUsername);
@@ -145,6 +177,7 @@ export function useAccountInputForContract({
     inputUsername,
     lastLoggedInUsername,
     lastLoggedInDomain,
+    lastAccountId,
     targetAccountId,
     displayPostfix,
     isUsingExistingAccount,
