@@ -10,7 +10,7 @@
     "preview": "vite preview --host --port 5174"
   },
   "dependencies": {
-    "@tatchi-xyz/sdk": "^0.56.0",
+    "@tatchi-xyz/sdk": "^0.57.0",
     "jsqr": "^1.4.0",
     "qrcode": "^1.5.4",
     "react": "^19.1.1",
