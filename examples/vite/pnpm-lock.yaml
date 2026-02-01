@@ -10,7 +10,13 @@ importers:
     dependencies:
       '@tatchi-xyz/sdk':
         specifier: ^0.56.0
-        version: 0.56.0(@types/react@19.2.7)(qrcode@1.5.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+        version: 0.56.0(@types/react@19.2.7)(jsqr@1.4.0)(qrcode@1.5.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      qrcode:
+        specifier: ^1.5.4
+        version: 1.5.4
       react:
         specifier: ^19.1.1
         version: 19.2.3
@@ -951,6 +957,9 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  jsqr@1.4.0:
+    resolution: {integrity: sha512-dxLob7q65Xg2DvstYkRpkYtmKm2sPJ9oFhrhmudT1dZvNFFTlroai3AWSpLey/w5vMcLBXRgOJsbXpdN9HzU/A==}
+
   lit-element@4.2.1:
     resolution: {integrity: sha512-WGAWRGzirAgyphK2urmYOV72tlvnxw7YfyLDgQ+OZnM9vQQBQnumQ7jUJe6unEzwGU3ahFOjuz1iz1jjrpCPuw==}
 
@@ -1752,7 +1761,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.54.0':
     optional: true
 
-  '@tatchi-xyz/sdk@0.56.0(@types/react@19.2.7)(qrcode@1.5.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+  '@tatchi-xyz/sdk@0.56.0(@types/react@19.2.7)(jsqr@1.4.0)(qrcode@1.5.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
     dependencies:
       '@lit/react': 1.0.8(@types/react@19.2.7)
       '@noble/ciphers': 2.1.1
@@ -1764,6 +1773,7 @@ snapshots:
       lit: 3.3.1
       tslib: 2.8.1
     optionalDependencies:
+      jsqr: 1.4.0
       qrcode: 1.5.4
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -1951,8 +1961,7 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       get-intrinsic: 1.3.0
 
-  camelcase@5.3.1:
-    optional: true
+  camelcase@5.3.1: {}
 
   caniuse-lite@1.0.30001761: {}
 
@@ -1972,7 +1981,6 @@ snapshots:
       string-width: 4.2.3
       strip-ansi: 6.0.1
       wrap-ansi: 6.2.0
-    optional: true
 
   cliui@8.0.1:
     dependencies:
@@ -2054,8 +2062,7 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  decamelize@1.2.0:
-    optional: true
+  decamelize@1.2.0: {}
 
   define-data-property@1.1.4:
     dependencies:
@@ -2084,8 +2091,7 @@ snapshots:
       miller-rabin: 4.0.1
       randombytes: 2.1.0
 
-  dijkstrajs@1.0.3:
-    optional: true
+  dijkstrajs@1.0.3: {}
 
   domain-browser@4.22.0: {}
 
@@ -2172,7 +2178,6 @@ snapshots:
     dependencies:
       locate-path: 5.0.0
       path-exists: 4.0.0
-    optional: true
 
   find-up@5.0.0:
     dependencies:
@@ -2324,6 +2329,8 @@ snapshots:
 
   json5@2.2.3: {}
 
+  jsqr@1.4.0: {}
+
   lit-element@4.2.1:
     dependencies:
       '@lit-labs/ssr-dom-shim': 1.4.0
@@ -2343,7 +2350,6 @@ snapshots:
   locate-path@5.0.0:
     dependencies:
       p-locate: 4.1.0
-    optional: true
 
   locate-path@6.0.0:
     dependencies:
@@ -2443,7 +2449,6 @@ snapshots:
   p-limit@2.3.0:
     dependencies:
       p-try: 2.2.0
-    optional: true
 
   p-limit@3.1.0:
     dependencies:
@@ -2452,14 +2457,12 @@ snapshots:
   p-locate@4.1.0:
     dependencies:
       p-limit: 2.3.0
-    optional: true
 
   p-locate@5.0.0:
     dependencies:
       p-limit: 3.1.0
 
-  p-try@2.2.0:
-    optional: true
+  p-try@2.2.0: {}
 
   pako@1.0.11: {}
 
@@ -2496,8 +2499,7 @@ snapshots:
     dependencies:
       find-up: 5.0.0
 
-  pngjs@5.0.0:
-    optional: true
+  pngjs@5.0.0: {}
 
   possible-typed-array-names@1.1.0: {}
 
@@ -2529,7 +2531,6 @@ snapshots:
       dijkstrajs: 1.0.3
       pngjs: 5.0.0
       yargs: 15.4.1
-    optional: true
 
   qs@6.14.0:
     dependencies:
@@ -2573,8 +2574,7 @@ snapshots:
 
   require-directory@2.1.1: {}
 
-  require-main-filename@2.0.0:
-    optional: true
+  require-main-filename@2.0.0: {}
 
   resolve@1.22.11:
     dependencies:
@@ -2633,8 +2633,7 @@ snapshots:
 
   semver@6.3.1: {}
 
-  set-blocking@2.0.0:
-    optional: true
+  set-blocking@2.0.0: {}
 
   set-function-length@1.2.2:
     dependencies:
@@ -2821,8 +2820,7 @@ snapshots:
 
   vm-browserify@1.1.2: {}
 
-  which-module@2.0.1:
-    optional: true
+  which-module@2.0.1: {}
 
   which-typed-array@1.1.19:
     dependencies:
@@ -2839,7 +2837,6 @@ snapshots:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-    optional: true
 
   wrap-ansi@7.0.0:
     dependencies:
@@ -2849,8 +2846,7 @@ snapshots:
 
   xtend@4.0.2: {}
 
-  y18n@4.0.3:
-    optional: true
+  y18n@4.0.3: {}
 
   y18n@5.0.8: {}
 
@@ -2860,7 +2856,6 @@ snapshots:
     dependencies:
       camelcase: 5.3.1
       decamelize: 1.2.0
-    optional: true
 
   yargs-parser@21.1.1: {}
 
@@ -2877,7 +2872,6 @@ snapshots:
       which-module: 2.0.1
       y18n: 4.0.3
       yargs-parser: 18.1.3
-    optional: true
 
   yargs@17.7.2:
     dependencies:

@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@tatchi-xyz/sdk": "^0.56.0",
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "sonner": "^2.0.7"
