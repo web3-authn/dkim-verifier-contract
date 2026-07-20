@@ -1,15 +1,14 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { tatchiApp } from '@tatchi-xyz/sdk/plugins/vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-
 
 export default defineConfig(({ mode }) => {
   // If you ship a single build with a testnet/mainnet toggle, the host page must delegate
   // WebAuthn + clipboard to BOTH wallet origins (Permissions-Policy).
   const walletOrigins = [
-    'https://wallet-staging.web3authn.org',
-    'https://wallet-mainnet.web3authn.org',
+    'https://wallet-staging.tatchi.xyz',
+    'https://wallet-mainnet.tatchi.xyz',
   ];
   return {
     clearScreen: false,
@@ -31,7 +30,8 @@ export default defineConfig(({ mode }) => {
       tatchiApp({
         walletOrigins,
         enableDebugRoutes: true,
-        // Needed if you ship a single build with a testnet/mainnet toggle.
+        // v0.58.0+: keep COOP disabled on app routes to avoid breaking popup-based wallets.
+        coopMode: 'off',
         emitHeaders: true,
       }),
     ],

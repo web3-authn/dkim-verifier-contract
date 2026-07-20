@@ -18,26 +18,26 @@ const DEFAULTS_BY_NETWORK: Record<
   }
 > = {
   testnet: {
-    recoverEmailRecipient: "recover-testnet@web3authn.org",
+    recoverEmailRecipient: "recover-testnet@tatchi.xyz",
     relayerUrl: "https://relay-staging.tatchi.xyz",
     relayerAccountId: "w3a-relayer.testnet",
     nearNetwork: "testnet",
     nearRpcUrl: "https://test.rpc.fastnear.com",
     nearExplorerUrl: "https://testnet.nearblocks.io",
-    walletOrigin: "https://wallet-staging.web3authn.org",
+    walletOrigin: "https://wallet-staging.tatchi.xyz",
     webauthnContractId: "w3a-v1.testnet",
     emailRecovererContractId: "w3a-email-recoverer-v1.testnet",
     dkimVerifierContractId: "w3a-email-dkim-verifier-v1.testnet",
     zkEmailVerifierContractId: "zk-email-verifier-v1.testnet",
   },
   mainnet: {
-    recoverEmailRecipient: "recover-mainnet@web3authn.org",
+    recoverEmailRecipient: "recover-mainnet@tatchi.xyz",
     relayerUrl: "https://relay-mainnet.tatchi.xyz",
     relayerAccountId: "w3a-relayer.near",
     nearNetwork: "mainnet",
     nearRpcUrl: "https://free.rpc.fastnear.com",
     nearExplorerUrl: "https://nearblocks.io",
-    walletOrigin: "https://wallet-mainnet.web3authn.org",
+    walletOrigin: "https://wallet-mainnet.tatchi.xyz",
     webauthnContractId: "w3a-v1.near",
     emailRecovererContractId: "email-recoverer-v1.near",
     dkimVerifierContractId: "w3a-email-dkim-verifier-v1.near",
@@ -71,7 +71,7 @@ export function buildTatchiConfig(networkMode: NetworkMode): TatchiConfigsInput 
       walletOrigin: defaults.walletOrigin,
       walletServicePath: "/wallet-service",
       sdkBasePath: "/sdk",
-      rpIdOverride: "web3authn.org",
+      rpIdOverride: "tatchi.xyz",
     },
   };
 }
